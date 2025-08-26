@@ -85,7 +85,7 @@ public class Util {
     public static final int RUN_FROM_BATTLE = 7;
     public static final int SAVED_FROM_BATTLE = 1;
     public static final int ELITE_CHANCE = 5;
-    public static final int PLAYER_ACCURACY = 80;
+    public static final int PLAYER_ACCURACY = 95;
     public static final int ENEMY_MIN_ACCURACY = 75;
     public static final int ENEMY_MAX_ACCURACY = 95;
     public static final int REVIVAL = 1;
@@ -124,9 +124,9 @@ public class Util {
     public static final float LEGENDARY_ENCHANT_MAX = 1.6f;
 
     // Level up scaling
-    public static final int PLAYER_INIT_MAX_HP = 75;
-    public static final int PLAYER_INIT_MIN_DMG = 10;
-    public static final int PLAYER_INIT_MAX_DMG = 16;
+    public static final int PLAYER_INIT_MAX_HP = 500;
+    public static final int PLAYER_INIT_MIN_DMG = 100;
+    public static final int PLAYER_INIT_MAX_DMG = 200;
     public static final int PLAYER_MIN_HP_INCREASE = 9;
     public static final int PLAYER_MAX_HP_INCREASE = 17;
     public static final int PLAYER_MIN_DMG_INCREASE = 1;

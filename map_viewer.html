@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibGDX Map Viewer - Với Textures Thực Tế</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ecf0f1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .controls {
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .file-input {
+            margin-bottom: 15px;
+        }
+        
+        .file-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .file-input input {
+            padding: 8px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .info {
+            background: #27ae60;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .error {
+            background: #e74c3c;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .map-container {
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            overflow: auto;
+        }
+        
+        .map-canvas {
+            border: 2px solid #3498db;
+            background: #ecf0f1;
+            margin: 0 auto;
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .map-info {
+            margin-top: 15px;
+            text-align: left;
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .map-info h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        
+        .layer-controls {
+            margin: 15px 0;
+        }
+        
+        .layer-controls label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        
+        .layer-controls input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        .zoom-controls {
+            margin: 15px 0;
+        }
+        
+        .zoom-controls button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .zoom-controls button:hover {
+            background: #2980b9;
+        }
+        
+        .legend {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .legend h4 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            vertical-align: middle;
+            border: 1px solid #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 LibGDX Map Viewer</h1>
+        <p style="text-align: center; color: #bdc3c7;">Preview maps với textures thực tế từ game</p>
+        
+        <div class="controls">
+            <div class="file-input">
+                <label for="mapFile">Chọn Map File (.txt):</label>
+                <input type="file" id="mapFile" accept=".txt" />
+                <small style="color: #bdc3c7;">Texture sẽ được tự động load từ android/assets/textures.png</small>
+            </div>
+            
+            <div class="zoom-controls">
+                <label>Zoom:</label>
+                <button onclick="changeZoom(0.5)">50%</button>
+                <button onclick="changeZoom(1)">100%</button>
+                <button onclick="changeZoom(2)">200%</button>
+                <button onclick="changeZoom(4)">400%</button>
+                <button onclick="changeZoom(8)">800%</button>
+            </div>
+            
+            <div class="layer-controls">
+                <label><input type="checkbox" id="showBottom" checked> Bottom Layer</label>
+                <label><input type="checkbox" id="showMain" checked> Main Layer</label>
+                <label><input type="checkbox" id="showTop" checked> Top Layer</label>
+                <label><input type="checkbox" id="showGrid"> Show Grid</label>
+                <label><input type="checkbox" id="showCoords"> Show Coordinates</label>
+            </div>
+        </div>
+        
+        <div id="messageArea"></div>
+        
+        <div class="map-container">
+            <canvas id="mapCanvas" class="map-canvas"></canvas>
+            <div id="mapInfo" class="map-info" style="display: none;">
+                <h3>Map Information</h3>
+                <div id="mapDetails"></div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <h4>🎯 Special Tiles Legend</h4>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #e74c3c;"></span>
+                Blocked (Walls)
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #f39c12;"></span>
+                Question Mark (?)
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #9b59b6;"></span>
+                Teleport
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #e67e22;"></span>
+                Exclamation (!)
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #27ae60;"></span>
+                End Tile
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #3498db;"></span>
+                Ice
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #1abc9c;"></span>
+                Player Spawn
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let textureAtlas = null;
+        let mapData = null;
+        let currentZoom = 2;
+        const tileSize = 16;
+        
+        // Thông tin từ textures.atlas - vị trí chính xác của 16x16_tiles
+        const tilesAtlasInfo = {
+            x: 380,      // vị trí X trong atlas
+            y: 320,      // vị trí Y trong atlas  
+            width: 256,  // chiều rộng total
+            height: 272, // chiều cao total
+            tileSize: 16,
+            tilesPerRow: 16, // 256/16 = 16 tiles per row
+            tilesPerCol: 17  // 272/16 = 17 tiles per column
+        };
+        
+        // Tile mapping cho textures 16x16
+        const blockedTileIds = [
+            4, 5, 17, 19, 20, 21, 33, 34, 35, 36, 37, 65, 66, 67, 68, 81, 82, 83, 84, 
+            100, 101, 102, 115, 116, 117, 118, 131, 132, 133, 134, 135, 136, 137, 138, 
+            139, 144, 145, 146, 147, 156, 157, 165, 166, 151, 152, 167, 168, 169, 170, 
+            184, 185, 186, 197, 198, 199, 200, 201, 202, 215, 216, 217, 218, 227, 228, 
+            229, 230, 231, 232, 233, 234, 235, 243, 244, 247, 249, 263, 264, 265, 266, 
+            267, 268, 269
+        ];
+        
+        const iceTileIds = [171, 172, 173, 187, 188, 189, 203, 204, 205, 220, 221, 236, 237];
+        
+        // Special animated tile IDs
+        const specialTiles = {
+            106: { name: 'Question Mark', color: '#f39c12' },
+            107: { name: 'Teleport', color: '#9b59b6' },
+            108: { name: 'Exclamation', color: '#e67e22' },
+            110: { name: 'End', color: '#27ae60' }
+        };
+
+        // Tự động load texture khi trang được load
+        window.addEventListener('load', function() {
+            loadTextureFromAssets();
+        });
+
+        document.getElementById('mapFile').addEventListener('change', loadMap);
+        
+        // Layer controls
+        document.getElementById('showBottom').addEventListener('change', renderMap);
+        document.getElementById('showMain').addEventListener('change', renderMap);
+        document.getElementById('showTop').addEventListener('change', renderMap);
+        document.getElementById('showGrid').addEventListener('change', renderMap);
+        document.getElementById('showCoords').addEventListener('change', renderMap);
+
+        function loadTextureFromAssets() {
+            const img = new Image();
+            img.onload = function() {
+                textureAtlas = img;
+                showMessage('✅ Texture atlas loaded từ android/assets/textures.png!');
+                if (mapData) renderMap();
+            };
+            img.onerror = function() {
+                showMessage('❌ Không thể load textures.png từ android/assets/. Hãy đảm bảo file tồn tại!', 'error');
+            };
+            // Đường dẫn relative đến texture
+            img.src = 'android/assets/textures.png';
+        }
+
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        function loadTexture(event) {
+            // Function này không còn cần thiết vì texture được auto-load
+            // Giữ lại để tương thích backward nếu cần
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    textureAtlas = img;
+                    showMessage('✅ Texture atlas loaded manually!');
+                    if (mapData) renderMap();
+                };
+                img.onerror = function() {
+                    showMessage('❌ Error loading texture atlas!', 'error');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadMap(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    mapData = parseMapFile(e.target.result);
+                    showMessage('✅ Map loaded successfully!');
+                    displayMapInfo();
+                    if (textureAtlas) renderMap();
+                } catch (error) {
+                    showMessage(`❌ Error parsing map: ${error.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseMapFile(content) {
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+            
+            const mapWidth = parseInt(lines[0]);
+            const mapHeight = parseInt(lines[1]);
+            const playerSpawnX = parseInt(lines[2]);
+            const playerSpawnY = parseInt(lines[3]);
+            const isDark = parseInt(lines[4]) === 1;
+            const weather = parseInt(lines[5]);
+            
+            // Parse bottom layer
+            const bottomLayer = [];
+            for (let i = 6; i < 6 + mapHeight; i++) {
+                const row = lines[i].split(',').map(id => parseInt(id.trim()));
+                bottomLayer.push(row);
+            }
+            
+            // Parse main layer
+            const mainLayer = [];
+            for (let i = 6 + mapHeight; i < 6 + mapHeight * 2; i++) {
+                const row = lines[i].split(',').map(cell => {
+                    const trimmed = cell.trim();
+                    if (trimmed.startsWith('e')) {
+                        return { type: 'entity', id: parseInt(trimmed.substring(1)) };
+                    } else if (trimmed.startsWith('a')) {
+                        const parts = trimmed.substring(1).split('|');
+                        return { 
+                            type: 'animated', 
+                            animIndex: parseInt(parts[0]), 
+                            frames: parseInt(parts[1]), 
+                            fps: parseInt(parts[2]),
+                            id: parseInt(parts[0]) + 96
+                        };
+                    } else {
+                        return { type: 'tile', id: parseInt(trimmed) };
+                    }
+                });
+                mainLayer.push(row);
+            }
+            
+            // Parse top layer if exists
+            let topLayer = null;
+            const hasTopLayer = parseInt(lines[6 + mapHeight * 2]) === 1;
+            if (hasTopLayer) {
+                topLayer = [];
+                for (let i = 7 + mapHeight * 2; i < 7 + mapHeight * 3; i++) {
+                    const row = lines[i].split(',').map(id => parseInt(id.trim()));
+                    topLayer.push(row);
+                }
+            }
+            
+            return {
+                width: mapWidth,
+                height: mapHeight,
+                playerSpawn: { x: playerSpawnX, y: playerSpawnY },
+                isDark,
+                weather,
+                bottomLayer,
+                mainLayer,
+                topLayer
+            };
+        }
+
+        function displayMapInfo() {
+            if (!mapData) return;
+            
+            const weatherNames = ['Normal', 'Light Rain', 'Heavy Rain', 'Thunderstorm', 'Snow', 'Blizzard'];
+            
+            document.getElementById('mapDetails').innerHTML = `
+                <strong>Size:</strong> ${mapData.width} x ${mapData.height}<br>
+                <strong>Player Spawn:</strong> (${mapData.playerSpawn.x}, ${mapData.playerSpawn.y})<br>
+                <strong>Lighting:</strong> ${mapData.isDark ? 'Night' : 'Day'}<br>
+                <strong>Weather:</strong> ${weatherNames[mapData.weather] || 'Unknown'}<br>
+                <strong>Has Top Layer:</strong> ${mapData.topLayer ? 'Yes' : 'No'}
+            `;
+            
+            document.getElementById('mapInfo').style.display = 'block';
+        }
+
+        function getTileFromAtlas(tileId) {
+            if (!textureAtlas || tileId <= 0) return null;
+            
+            // Tính vị trí tile trong 16x16_tiles region của atlas
+            const index = tileId - 1;
+            const row = Math.floor(index / tilesAtlasInfo.tilesPerRow);
+            const col = index % tilesAtlasInfo.tilesPerRow;
+            
+            // Vị trí thực tế trong atlas (cộng với offset của 16x16_tiles region)
+            return {
+                x: tilesAtlasInfo.x + (col * tilesAtlasInfo.tileSize),
+                y: tilesAtlasInfo.y + (row * tilesAtlasInfo.tileSize),
+                width: tilesAtlasInfo.tileSize,
+                height: tilesAtlasInfo.tileSize
+            };
+        }
+
+        function isSpecialTile(cell) {
+            if (cell.type === 'animated' && specialTiles[cell.id]) {
+                return specialTiles[cell.id];
+            }
+            return null;
+        }
+
+        function renderMap() {
+            if (!mapData || !textureAtlas) return;
+            
+            const canvas = document.getElementById('mapCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const scaledTileSize = tileSize * currentZoom;
+            canvas.width = mapData.width * scaledTileSize;
+            canvas.height = mapData.height * scaledTileSize;
+            
+            // Disable image smoothing for pixel art
+            ctx.imageSmoothingEnabled = false;
+            
+            // Clear canvas
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const showBottom = document.getElementById('showBottom').checked;
+            const showMain = document.getElementById('showMain').checked;
+            const showTop = document.getElementById('showTop').checked;
+            const showGrid = document.getElementById('showGrid').checked;
+            const showCoords = document.getElementById('showCoords').checked;
+            
+            // Render layers
+            for (let y = 0; y < mapData.height; y++) {
+                for (let x = 0; x < mapData.width; x++) {
+                    const canvasX = x * scaledTileSize;
+                    const canvasY = y * scaledTileSize; // Không flip Y coordinate nữa
+                    
+                    // Bottom layer
+                    if (showBottom && mapData.bottomLayer[y][x] > 0) {
+                        const tileInfo = getTileFromAtlas(mapData.bottomLayer[y][x]);
+                        if (tileInfo) {
+                            ctx.drawImage(
+                                textureAtlas,
+                                tileInfo.x, tileInfo.y, tileInfo.width, tileInfo.height,
+                                canvasX, canvasY, scaledTileSize, scaledTileSize
+                            );
+                        }
+                    }
+                    
+                    // Main layer
+                    if (showMain) {
+                        const cell = mapData.mainLayer[y][x];
+                        
+                        if (cell.type === 'tile' && cell.id > 0) {
+                            const tileInfo = getTileFromAtlas(cell.id);
+                            if (tileInfo) {
+                                ctx.drawImage(
+                                    textureAtlas,
+                                    tileInfo.x, tileInfo.y, tileInfo.width, tileInfo.height,
+                                    canvasX, canvasY, scaledTileSize, scaledTileSize
+                                );
+                            }
+                            
+                            // Highlight special tiles
+                            if (blockedTileIds.includes(cell.id)) {
+                                ctx.fillStyle = 'rgba(231, 76, 60, 0.3)'; // Red for blocked
+                                ctx.fillRect(canvasX, canvasY, scaledTileSize, scaledTileSize);
+                            } else if (iceTileIds.includes(cell.id)) {
+                                ctx.fillStyle = 'rgba(52, 152, 219, 0.3)'; // Blue for ice
+                                ctx.fillRect(canvasX, canvasY, scaledTileSize, scaledTileSize);
+                            }
+                        } else if (cell.type === 'animated') {
+                            // Draw colored rectangle for animated tiles
+                            const special = isSpecialTile(cell);
+                            if (special) {
+                                ctx.fillStyle = special.color;
+                                ctx.fillRect(canvasX, canvasY, scaledTileSize, scaledTileSize);
+                                
+                                // Add text label
+                                if (currentZoom >= 2) {
+                                    ctx.fillStyle = 'white';
+                                    ctx.font = `${Math.min(12 * currentZoom, 20)}px Arial`;
+                                    ctx.textAlign = 'center';
+                                    ctx.fillText(
+                                        special.name.charAt(0),
+                                        canvasX + scaledTileSize / 2,
+                                        canvasY + scaledTileSize / 2 + 4
+                                    );
+                                }
+                            } else {
+                                ctx.fillStyle = '#95a5a6';
+                                ctx.fillRect(canvasX, canvasY, scaledTileSize, scaledTileSize);
+                            }
+                        } else if (cell.type === 'entity') {
+                            // Draw entities as yellow squares
+                            ctx.fillStyle = '#f1c40f';
+                            ctx.fillRect(canvasX, canvasY, scaledTileSize, scaledTileSize);
+                            
+                            if (currentZoom >= 2) {
+                                ctx.fillStyle = 'black';
+                                ctx.font = `${Math.min(10 * currentZoom, 16)}px Arial`;
+                                ctx.textAlign = 'center';
+                                ctx.fillText(`E${cell.id}`, canvasX + scaledTileSize / 2, canvasY + scaledTileSize / 2 + 4);
+                            }
+                        }
+                    }
+                    
+                    // Top layer
+                    if (showTop && mapData.topLayer && mapData.topLayer[y][x] > 0) {
+                        const tileInfo = getTileFromAtlas(mapData.topLayer[y][x]);
+                        if (tileInfo) {
+                            ctx.drawImage(
+                                textureAtlas,
+                                tileInfo.x, tileInfo.y, tileInfo.width, tileInfo.height,
+                                canvasX, canvasY, scaledTileSize, scaledTileSize
+                            );
+                        }
+                    }
+                    
+                    // Player spawn
+                    if (x === mapData.playerSpawn.x && y === mapData.playerSpawn.y) {
+                        ctx.strokeStyle = '#1abc9c';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(canvasX + 2, canvasY + 2, scaledTileSize - 4, scaledTileSize - 4);
+                        
+                        if (currentZoom >= 2) {
+                            ctx.fillStyle = '#1abc9c';
+                            ctx.font = `${Math.min(12 * currentZoom, 20)}px Arial`;
+                            ctx.textAlign = 'center';
+                            ctx.fillText('P', canvasX + scaledTileSize / 2, canvasY + scaledTileSize / 2 + 4);
+                        }
+                    }
+                }
+            }
+            
+            // Draw grid
+            if (showGrid) {
+                ctx.strokeStyle = 'rgba(189, 195, 199, 0.3)';
+                ctx.lineWidth = 1;
+                
+                for (let x = 0; x <= mapData.width; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x * scaledTileSize, 0);
+                    ctx.lineTo(x * scaledTileSize, canvas.height);
+                    ctx.stroke();
+                }
+                
+                for (let y = 0; y <= mapData.height; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y * scaledTileSize);
+                    ctx.lineTo(canvas.width, y * scaledTileSize);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw coordinates
+            if (showCoords && currentZoom >= 2) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.font = `${Math.min(8 * currentZoom, 12)}px Arial`;
+                ctx.textAlign = 'left';
+                
+                for (let y = 0; y < mapData.height; y++) {
+                    for (let x = 0; x < mapData.width; x++) {
+                        const canvasX = x * scaledTileSize;
+                        const canvasY = y * scaledTileSize; // Không flip Y coordinate
+                        ctx.fillText(`${x},${y}`, canvasX + 2, canvasY + 12);
+                    }
+                }
+            }
+        }
+
+        function changeZoom(newZoom) {
+            currentZoom = newZoom;
+            renderMap();
+        }
+
+        // Add click handler for tile info
+        document.getElementById('mapCanvas').addEventListener('click', function(event) {
+            if (!mapData) return;
+            
+            const rect = this.getBoundingClientRect();
+            const x = Math.floor((event.clientX - rect.left) / (tileSize * currentZoom));
+            const y = Math.floor((event.clientY - rect.top) / (tileSize * currentZoom)); // Không flip Y coordinate
+            
+            if (x >= 0 && x < mapData.width && y >= 0 && y < mapData.height) {
+                const bottomTile = mapData.bottomLayer[y][x];
+                const mainTile = mapData.mainLayer[y][x];
+                const topTile = mapData.topLayer ? mapData.topLayer[y][x] : 0;
+                
+                let info = `Tile (${x}, ${y}):\n`;
+                info += `Bottom: ${bottomTile}\n`;
+                info += `Main: ${JSON.stringify(mainTile)}\n`;
+                info += `Top: ${topTile}`;
+                
+                alert(info);
+            }
+        });
+
+        // Show initial message
+        showMessage('👋 Texture đã được tự động load! Chỉ cần chọn map file (.txt) để bắt đầu xem!');
+    </script>
+</body>
+</html>

@@ -16,8 +16,8 @@ public class Settings {
     public boolean muteSfx = false;
 
     // toggles
-    public boolean showEnemyLevels = false;
+    public boolean showEnemyLevels = true;
     public boolean showWeatherAnimations = true;
-    public boolean showFps = false;
+    public boolean showFps = true;
 
 }

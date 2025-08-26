@@ -77,14 +77,14 @@ public class Player extends Entity {
 
     // special move cooldown
     // starts at 4 turns then every 10 levels it is reduced by 1 with a min of 1
-    public int smoveCd = 4;
+    public int smoveCd = 1;
 
     // whether or not the player is currently in a map
     public boolean inMap = false;
 
     // player's level progress stored as a (world, level) key
-    public int maxWorld = 0;
-    public int maxLevel = 0;
+    public int maxWorld = 2;
+    public int maxLevel = 12;
 
     // the player's custom game settings
     public Settings settings = new Settings();
@@ -101,12 +101,13 @@ public class Player extends Entity {
         minDamage = Util.PLAYER_INIT_MIN_DMG;
         maxDamage = Util.PLAYER_INIT_MAX_DMG;
 
-        level = 1;
+        level = 40;
         speed = 50.f;
+        gold = 999;
 
-        exp = 0;
+        exp = 1;
         // offset between 3 and 5
-        maxExp = Util.calculateMaxExp(1, MathUtils.random(3, 5));
+        maxExp = 999;
 
         // create tilemap animation
         am = new AnimationManager(rm.sprites16x16, Util.PLAYER_WALKING, Util.PLAYER_WALKING_DELAY);
