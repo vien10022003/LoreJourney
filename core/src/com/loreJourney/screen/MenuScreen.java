@@ -127,7 +127,8 @@ public class MenuScreen extends MenuExtensionScreen {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Không làm gì khi nhấn nút Start/Play
+                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                setFadeScreen(game.worldSelectScreen);
             }
         });
     }

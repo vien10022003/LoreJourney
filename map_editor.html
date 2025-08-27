@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibGDX Map Editor - Tạo Map Mới</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #2c3e50;
+            color: white;
+            overflow-x: auto;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            height: fit-content;
+            position: sticky;
+            top: 10px;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        h1, h2, h3 {
+            color: #ecf0f1;
+            margin-top: 0;
+        }
+        
+        .section {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button.active {
+            background: #e74c3c;
+        }
+        
+        .tile-palette {
+            background: #2c3e50;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 32px);
+            gap: 2px;
+            justify-content: center;
+        }
+        
+        .tile-item {
+            width: 32px;
+            height: 32px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            image-rendering: pixelated;
+            background: #34495e;
+        }
+        
+        .tile-item:hover {
+            border-color: #f39c12;
+        }
+        
+        .tile-item.selected {
+            border-color: #e74c3c;
+            border-width: 3px;
+        }
+        
+        .map-canvas {
+            border: 2px solid #3498db;
+            background: #ecf0f1;
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+        
+        .layer-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .layer-tab {
+            padding: 10px 20px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        .layer-tab.active {
+            background: #3498db;
+        }
+        
+        .tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .tool {
+            padding: 8px 12px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .tool.active {
+            background: #e74c3c;
+        }
+        
+        .export-area {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .export-text {
+            width: 100%;
+            height: 200px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .info {
+            background: #27ae60;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .special-tiles {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .special-tile {
+            padding: 10px;
+            background: #95a5a6;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .special-tile.selected {
+            background: #e74c3c;
+        }
+        
+        .coordinates {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="coordinates" id="coordinates">X: 0, Y: 0</div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>🎮 Map Editor</h2>
+            
+            <div class="section">
+                <h3>Map Settings</h3>
+                <div class="input-group">
+                    <label>Width:</label>
+                    <input type="number" id="mapWidth" value="15" min="5" max="50">
+                </div>
+                <div class="input-group">
+                    <label>Height:</label>
+                    <input type="number" id="mapHeight" value="13" min="5" max="50">
+                </div>
+                <div class="input-group">
+                    <label>Player Spawn X:</label>
+                    <input type="number" id="playerX" value="7" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Player Spawn Y:</label>
+                    <input type="number" id="playerY" value="4" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Dark Map:</label>
+                    <select id="isDark">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Weather:</label>
+                    <select id="weather">
+                        <option value="0">Normal</option>
+                        <option value="1">Light Rain</option>
+                        <option value="2">Heavy Rain</option>
+                        <option value="3">Thunderstorm</option>
+                        <option value="4">Snow</option>
+                        <option value="5">Blizzard</option>
+                    </select>
+                </div>
+                <button onclick="createNewMap()">Create New Map</button>
+            </div>
+            
+            <div class="section">
+                <h3>Tools</h3>
+                <div class="tools">
+                    <button class="tool active" id="paintTool" onclick="setTool('paint')">🖌️ Paint</button>
+                    <button class="tool" id="eraseTool" onclick="setTool('erase')">🧽 Erase</button>
+                    <button class="tool" id="fillTool" onclick="setTool('fill')">🪣 Fill</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Tile Palette</h3>
+                <p>Selected Tile ID: <span id="selectedTileId">1</span></p>
+                <div class="tile-palette">
+                    <canvas id="tilePalette" class="tile-grid"></canvas>
+                </div>
+                
+                <h4>Special Tiles</h4>
+                <div class="special-tiles">
+                    <div class="special-tile" onclick="selectSpecialTile('question')" id="specialQuestion">
+                        ❓ Question<br>a10|4|8
+                    </div>
+                    <div class="special-tile" onclick="selectSpecialTile('teleport')" id="specialTeleport">
+                        🌀 Teleport<br>a11|4|8
+                    </div>
+                    <div class="special-tile" onclick="selectSpecialTile('exclamation')" id="specialExclamation">
+                        ❗ Exclamation<br>a12|4|8
+                    </div>
+                    <div class="special-tile" onclick="selectSpecialTile('end')" id="specialEnd">
+                        🏁 End<br>a14|4|8
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <button onclick="loadTextureFile()">Load Custom Texture</button>
+                <input type="file" id="textureFile" accept="image/*" style="display: none;">
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <h2>Map Canvas</h2>
+            
+            <div class="layer-tabs">
+                <button class="layer-tab active" onclick="setLayer('bottom')" id="bottomTab">Bottom Layer</button>
+                <button class="layer-tab" onclick="setLayer('main')" id="mainTab">Main Layer</button>
+                <button class="layer-tab" onclick="setLayer('top')" id="topTab">Top Layer</button>
+            </div>
+            
+            <div class="tools">
+                <button onclick="clearLayer()">Clear Current Layer</button>
+                <button onclick="fillLayer()">Fill Current Layer</button>
+                <button onclick="copyFromTemplate()">Copy from Template</button>
+                <label>
+                    <input type="checkbox" id="showGrid" checked> Show Grid
+                </label>
+                <label>
+                    <input type="checkbox" id="showPlayerSpawn" checked> Show Player Spawn
+                </label>
+            </div>
+            
+            <canvas id="mapCanvas" class="map-canvas"></canvas>
+            
+            <div class="export-area">
+                <h3>Export Map</h3>
+                <button onclick="exportMap()">Generate Map Data</button>
+                <button onclick="copyToClipboard()">Copy to Clipboard</button>
+                <button onclick="downloadMap()">Download as .txt</button>
+                <textarea class="export-text" id="exportText" placeholder="Generated map data will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let textureAtlas = null;
+        let currentTool = 'paint';
+        let currentLayer = 'bottom';
+        let selectedTileId = 1;
+        let selectedSpecialTile = null;
+        let isMouseDown = false;
+        
+        // Map data
+        let mapData = {
+            width: 15,
+            height: 13,
+            playerSpawn: { x: 7, y: 4 },
+            isDark: 0,
+            weather: 0,
+            bottomLayer: [],
+            mainLayer: [],
+            topLayer: []
+        };
+        
+        const tileSize = 16;
+        const canvasTileSize = 32;
+        
+        // Thông tin từ textures.atlas
+        const tilesAtlasInfo = {
+            x: 380,
+            y: 320,
+            width: 256,
+            height: 272,
+            tileSize: 16,
+            tilesPerRow: 16,
+            tilesPerCol: 17
+        };
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            loadDefaultTexture();
+            createNewMap();
+            setupEventListeners();
+        });
+        
+        function loadDefaultTexture() {
+            const img = new Image();
+            img.onload = function() {
+                textureAtlas = img;
+                createTilePalette();
+            };
+            img.onerror = function() {
+                console.log('Could not load default texture, will use fallback');
+                createFallbackPalette();
+            };
+            img.src = 'android/assets/textures.png';
+        }
+        
+        function loadTextureFile() {
+            document.getElementById('textureFile').click();
+        }
+        
+        document.getElementById('textureFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    textureAtlas = img;
+                    createTilePalette();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        function createTilePalette() {
+            const canvas = document.getElementById('tilePalette');
+            const ctx = canvas.getContext('2d');
+            
+            const tilesPerRow = 16;
+            const maxTiles = 272; // 17 rows * 16 tiles
+            
+            canvas.width = tilesPerRow * 34;
+            canvas.height = Math.ceil(maxTiles / tilesPerRow) * 34;
+            
+            ctx.imageSmoothingEnabled = false;
+            
+            for (let i = 0; i < maxTiles; i++) {
+                const row = Math.floor(i / tilesPerRow);
+                const col = i % tilesPerRow;
+                const x = col * 34;
+                const y = row * 34;
+                
+                // Draw tile background
+                ctx.fillStyle = i === 0 ? '#e74c3c' : '#95a5a6';
+                ctx.fillRect(x, y, 32, 32);
+                
+                if (textureAtlas && i > 0) {
+                    const tileInfo = getTileFromAtlas(i);
+                    if (tileInfo) {
+                        ctx.drawImage(
+                            textureAtlas,
+                            tileInfo.x, tileInfo.y, tileInfo.width, tileInfo.height,
+                            x, y, 32, 32
+                        );
+                    }
+                }
+                
+                // Draw tile number
+                ctx.fillStyle = 'white';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(i, x + 16, y + 30);
+                
+                // Selection border
+                if (i === selectedTileId) {
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x, y, 32, 32);
+                }
+            }
+        }
+        
+        function createFallbackPalette() {
+            const canvas = document.getElementById('tilePalette');
+            const ctx = canvas.getContext('2d');
+            
+            const tilesPerRow = 16;
+            const maxTiles = 272;
+            
+            canvas.width = tilesPerRow * 34;
+            canvas.height = Math.ceil(maxTiles / tilesPerRow) * 34;
+            
+            for (let i = 0; i < maxTiles; i++) {
+                const row = Math.floor(i / tilesPerRow);
+                const col = i % tilesPerRow;
+                const x = col * 34;
+                const y = row * 34;
+                
+                // Generate color based on tile ID
+                const hue = (i * 137.508) % 360;
+                ctx.fillStyle = i === 0 ? '#34495e' : `hsl(${hue}, 50%, 50%)`;
+                ctx.fillRect(x, y, 32, 32);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(i, x + 16, y + 16);
+                
+                if (i === selectedTileId) {
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x, y, 32, 32);
+                }
+            }
+        }
+        
+        function getTileFromAtlas(tileId) {
+            if (!textureAtlas || tileId <= 0) return null;
+            
+            const index = tileId - 1;
+            const row = Math.floor(index / tilesAtlasInfo.tilesPerRow);
+            const col = index % tilesAtlasInfo.tilesPerRow;
+            
+            return {
+                x: tilesAtlasInfo.x + (col * tilesAtlasInfo.tileSize),
+                y: tilesAtlasInfo.y + (row * tilesAtlasInfo.tileSize),
+                width: tilesAtlasInfo.tileSize,
+                height: tilesAtlasInfo.tileSize
+            };
+        }
+        
+        function setupEventListeners() {
+            const canvas = document.getElementById('mapCanvas');
+            const palette = document.getElementById('tilePalette');
+            
+            // Map canvas events
+            canvas.addEventListener('mousedown', handleCanvasMouseDown);
+            canvas.addEventListener('mousemove', handleCanvasMouseMove);
+            canvas.addEventListener('mouseup', handleCanvasMouseUp);
+            canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+            
+            // Tile palette events
+            palette.addEventListener('click', handlePaletteClick);
+            
+            // Input events
+            document.getElementById('showGrid').addEventListener('change', renderMap);
+            document.getElementById('showPlayerSpawn').addEventListener('change', renderMap);
+        }
+        
+        function handleCanvasMouseDown(e) {
+            isMouseDown = true;
+            handleCanvasPaint(e);
+        }
+        
+        function handleCanvasMouseMove(e) {
+            updateCoordinates(e);
+            if (isMouseDown) {
+                handleCanvasPaint(e);
+            }
+        }
+        
+        function handleCanvasMouseUp() {
+            isMouseDown = false;
+        }
+        
+        function updateCoordinates(e) {
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / canvasTileSize);
+            const y = Math.floor((e.clientY - rect.top) / canvasTileSize);
+            
+            document.getElementById('coordinates').textContent = `X: ${x}, Y: ${y}`;
+        }
+        
+        function handleCanvasPaint(e) {
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / canvasTileSize);
+            const y = Math.floor((e.clientY - rect.top) / canvasTileSize);
+            
+            if (x < 0 || x >= mapData.width || y < 0 || y >= mapData.height) return;
+            
+            if (currentTool === 'paint') {
+                paintTile(x, y);
+            } else if (currentTool === 'erase') {
+                eraseTile(x, y);
+            } else if (currentTool === 'fill') {
+                fillArea(x, y);
+            }
+            
+            renderMap();
+        }
+        
+        function handlePaletteClick(e) {
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / 34);
+            const y = Math.floor((e.clientY - rect.top) / 34);
+            
+            const tileId = y * 16 + x;
+            selectedTileId = tileId;
+            selectedSpecialTile = null;
+            
+            // Update UI
+            document.getElementById('selectedTileId').textContent = tileId;
+            document.querySelectorAll('.special-tile').forEach(el => el.classList.remove('selected'));
+            
+            createTilePalette();
+        }
+        
+        function paintTile(x, y) {
+            const layer = getCurrentLayer();
+            if (selectedSpecialTile) {
+                if (currentLayer === 'main') {
+                    layer[y][x] = { type: 'animated', value: selectedSpecialTile };
+                }
+            } else {
+                if (currentLayer === 'main') {
+                    layer[y][x] = { type: 'tile', id: selectedTileId };
+                } else {
+                    layer[y][x] = selectedTileId;
+                }
+            }
+        }
+        
+        function eraseTile(x, y) {
+            const layer = getCurrentLayer();
+            if (currentLayer === 'main') {
+                layer[y][x] = { type: 'tile', id: 0 };
+            } else {
+                layer[y][x] = 0;
+            }
+        }
+        
+        function fillArea(x, y) {
+            const layer = getCurrentLayer();
+            const targetValue = layer[y][x];
+            const newValue = selectedSpecialTile ? 
+                { type: 'animated', value: selectedSpecialTile } : 
+                (currentLayer === 'main' ? { type: 'tile', id: selectedTileId } : selectedTileId);
+            
+            floodFill(layer, x, y, targetValue, newValue, new Set());
+        }
+        
+        function floodFill(layer, x, y, targetValue, newValue, visited) {
+            if (x < 0 || x >= mapData.width || y < 0 || y >= mapData.height) return;
+            
+            const key = `${x},${y}`;
+            if (visited.has(key)) return;
+            visited.add(key);
+            
+            const currentValue = layer[y][x];
+            if (!valuesEqual(currentValue, targetValue)) return;
+            
+            layer[y][x] = newValue;
+            
+            floodFill(layer, x + 1, y, targetValue, newValue, visited);
+            floodFill(layer, x - 1, y, targetValue, newValue, visited);
+            floodFill(layer, x, y + 1, targetValue, newValue, visited);
+            floodFill(layer, x, y - 1, targetValue, newValue, visited);
+        }
+        
+        function valuesEqual(a, b) {
+            if (typeof a === 'object' && typeof b === 'object') {
+                return JSON.stringify(a) === JSON.stringify(b);
+            }
+            return a === b;
+        }
+        
+        function getCurrentLayer() {
+            switch (currentLayer) {
+                case 'bottom': return mapData.bottomLayer;
+                case 'main': return mapData.mainLayer;
+                case 'top': return mapData.topLayer;
+                default: return mapData.bottomLayer;
+            }
+        }
+        
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool').forEach(el => el.classList.remove('active'));
+            document.getElementById(tool + 'Tool').classList.add('active');
+        }
+        
+        function setLayer(layer) {
+            currentLayer = layer;
+            document.querySelectorAll('.layer-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(layer + 'Tab').classList.add('active');
+            renderMap();
+        }
+        
+        function selectSpecialTile(type) {
+            const specialTiles = {
+                'question': 'a10|4|8',
+                'teleport': 'a11|4|8',
+                'exclamation': 'a12|4|8',
+                'end': 'a14|4|8'
+            };
+            
+            selectedSpecialTile = specialTiles[type];
+            selectedTileId = 0;
+            
+            document.getElementById('selectedTileId').textContent = `Special: ${type}`;
+            document.querySelectorAll('.special-tile').forEach(el => el.classList.remove('selected'));
+            document.getElementById('special' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('selected');
+            
+            createTilePalette();
+        }
+        
+        function createNewMap() {
+            const width = parseInt(document.getElementById('mapWidth').value);
+            const height = parseInt(document.getElementById('mapHeight').value);
+            
+            mapData.width = width;
+            mapData.height = height;
+            mapData.playerSpawn.x = parseInt(document.getElementById('playerX').value);
+            mapData.playerSpawn.y = parseInt(document.getElementById('playerY').value);
+            mapData.isDark = parseInt(document.getElementById('isDark').value);
+            mapData.weather = parseInt(document.getElementById('weather').value);
+            
+            // Initialize layers
+            mapData.bottomLayer = Array(height).fill().map(() => Array(width).fill(0));
+            mapData.mainLayer = Array(height).fill().map(() => Array(width).fill({ type: 'tile', id: 0 }));
+            mapData.topLayer = Array(height).fill().map(() => Array(width).fill(0));
+            
+            setupMapCanvas();
+            renderMap();
+        }
+        
+        function setupMapCanvas() {
+            const canvas = document.getElementById('mapCanvas');
+            canvas.width = mapData.width * canvasTileSize;
+            canvas.height = mapData.height * canvasTileSize;
+        }
+        
+        function renderMap() {
+            const canvas = document.getElementById('mapCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const showGrid = document.getElementById('showGrid').checked;
+            const showPlayerSpawn = document.getElementById('showPlayerSpawn').checked;
+            
+            // Render layers
+            for (let y = 0; y < mapData.height; y++) {
+                for (let x = 0; x < mapData.width; x++) {
+                    const canvasX = x * canvasTileSize;
+                    const canvasY = y * canvasTileSize;
+                    
+                    // Bottom layer (always visible as base)
+                    if (mapData.bottomLayer[y][x] > 0) {
+                        renderTile(ctx, mapData.bottomLayer[y][x], canvasX, canvasY, 0.3);
+                    }
+                    
+                    // Current layer
+                    let currentValue;
+                    switch (currentLayer) {
+                        case 'bottom':
+                            currentValue = mapData.bottomLayer[y][x];
+                            break;
+                        case 'main':
+                            currentValue = mapData.mainLayer[y][x];
+                            break;
+                        case 'top':
+                            currentValue = mapData.topLayer[y][x];
+                            break;
+                    }
+                    
+                    if (currentLayer === 'main' && currentValue.type) {
+                        if (currentValue.type === 'tile' && currentValue.id > 0) {
+                            renderTile(ctx, currentValue.id, canvasX, canvasY, 1.0);
+                        } else if (currentValue.type === 'animated') {
+                            renderSpecialTile(ctx, currentValue.value, canvasX, canvasY);
+                        }
+                    } else if (currentLayer !== 'main' && currentValue > 0) {
+                        renderTile(ctx, currentValue, canvasX, canvasY, 1.0);
+                    }
+                }
+            }
+            
+            // Render player spawn (flip Y coordinate)
+            if (showPlayerSpawn) {
+                const spawnX = mapData.playerSpawn.x * canvasTileSize;
+                const spawnY = (mapData.height - 1 - mapData.playerSpawn.y) * canvasTileSize;
+                
+                ctx.strokeStyle = '#1abc9c';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(spawnX + 2, spawnY + 2, canvasTileSize - 4, canvasTileSize - 4);
+                
+                ctx.fillStyle = '#1abc9c';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('P', spawnX + canvasTileSize / 2, spawnY + canvasTileSize / 2 + 6);
+            }
+            
+            // Render grid
+            if (showGrid) {
+                ctx.strokeStyle = 'rgba(189, 195, 199, 0.5)';
+                ctx.lineWidth = 1;
+                
+                for (let x = 0; x <= mapData.width; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x * canvasTileSize, 0);
+                    ctx.lineTo(x * canvasTileSize, canvas.height);
+                    ctx.stroke();
+                }
+                
+                for (let y = 0; y <= mapData.height; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y * canvasTileSize);
+                    ctx.lineTo(canvas.width, y * canvasTileSize);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function renderTile(ctx, tileId, x, y, alpha = 1.0) {
+            if (textureAtlas && tileId > 0) {
+                const tileInfo = getTileFromAtlas(tileId);
+                if (tileInfo) {
+                    ctx.globalAlpha = alpha;
+                    ctx.drawImage(
+                        textureAtlas,
+                        tileInfo.x, tileInfo.y, tileInfo.width, tileInfo.height,
+                        x, y, canvasTileSize, canvasTileSize
+                    );
+                    ctx.globalAlpha = 1.0;
+                    return;
+                }
+            }
+            
+            // Fallback rendering
+            const hue = (tileId * 137.508) % 360;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = tileId === 0 ? '#34495e' : `hsl(${hue}, 50%, 50%)`;
+            ctx.fillRect(x, y, canvasTileSize, canvasTileSize);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(tileId, x + canvasTileSize / 2, y + canvasTileSize / 2 + 4);
+            ctx.globalAlpha = 1.0;
+        }
+        
+        function renderSpecialTile(ctx, value, x, y) {
+            const colors = {
+                'a10|4|8': '#f39c12',  // Question
+                'a11|4|8': '#9b59b6',  // Teleport
+                'a12|4|8': '#e67e22',  // Exclamation
+                'a14|4|8': '#27ae60'   // End
+            };
+            
+            const symbols = {
+                'a10|4|8': '❓',
+                'a11|4|8': '🌀',
+                'a12|4|8': '❗',
+                'a14|4|8': '🏁'
+            };
+            
+            ctx.fillStyle = colors[value] || '#95a5a6';
+            ctx.fillRect(x, y, canvasTileSize, canvasTileSize);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(symbols[value] || '?', x + canvasTileSize / 2, y + canvasTileSize / 2 + 6);
+        }
+        
+        function clearLayer() {
+            const layer = getCurrentLayer();
+            for (let y = 0; y < mapData.height; y++) {
+                for (let x = 0; x < mapData.width; x++) {
+                    if (currentLayer === 'main') {
+                        layer[y][x] = { type: 'tile', id: 0 };
+                    } else {
+                        layer[y][x] = 0;
+                    }
+                }
+            }
+            renderMap();
+        }
+        
+        function fillLayer() {
+            const layer = getCurrentLayer();
+            const fillValue = selectedSpecialTile ? 
+                { type: 'animated', value: selectedSpecialTile } : 
+                (currentLayer === 'main' ? { type: 'tile', id: selectedTileId } : selectedTileId);
+            
+            for (let y = 0; y < mapData.height; y++) {
+                for (let x = 0; x < mapData.width; x++) {
+                    layer[y][x] = fillValue;
+                }
+            }
+            renderMap();
+        }
+        
+        function copyFromTemplate() {
+            // Copy from the provided template
+            if (mapData.width === 15 && mapData.height === 13) {
+                const templateBottom = [
+                    [18,18,18,18,18,18,19,36,17,18,18,18,18,18,18],
+                    [18,18,18,18,18,18,19,36,17,18,18,18,18,18,18],
+                    [81,82,81,82,81,82,19,36,17,81,82,81,82,81,82],
+                    [18,18,18,18,4,34,35,36,33,34,5,18,18,18,18],
+                    [81,82,81,82,19,36,36,36,36,36,17,81,82,81,82],
+                    [18,18,18,18,19,36,36,36,36,36,17,18,18,18,18],
+                    [81,82,81,82,20,2,2,2,2,2,21,81,82,81,82],
+                    [18,18,18,18,18,18,9,18,18,25,18,18,18,18,18],
+                    [81,82,81,82,18,18,18,18,18,18,18,81,82,81,82],
+                    [18,18,18,18,18,18,18,18,18,18,18,18,18,18,18],
+                    [81,82,81,82,18,18,18,18,9,18,18,81,82,81,82],
+                    [18,18,18,18,18,25,18,18,18,18,18,18,18,18,18],
+                    [81,82,81,82,18,18,18,18,18,18,18,81,82,81,82]
+                ];
+                
+                for (let y = 0; y < mapData.height; y++) {
+                    for (let x = 0; x < mapData.width; x++) {
+                        mapData.bottomLayer[y][x] = templateBottom[y][x];
+                    }
+                }
+                
+                renderMap();
+                alert('Template copied to bottom layer!');
+            } else {
+                alert('Template only works for 15x13 maps. Please create a 15x13 map first.');
+            }
+        }
+        
+        function exportMap() {
+            // Update settings from UI
+            mapData.playerSpawn.x = parseInt(document.getElementById('playerX').value);
+            mapData.playerSpawn.y = parseInt(document.getElementById('playerY').value);
+            mapData.isDark = parseInt(document.getElementById('isDark').value);
+            mapData.weather = parseInt(document.getElementById('weather').value);
+            
+            let output = '';
+            
+            // Header
+            output += mapData.width + '\n';
+            output += mapData.height + '\n';
+            output += mapData.playerSpawn.x + '\n';
+            output += mapData.playerSpawn.y + '\n';
+            output += mapData.isDark + '\n';
+            output += mapData.weather + '\n';
+            
+            // Bottom layer
+            for (let y = 0; y < mapData.height; y++) {
+                output += mapData.bottomLayer[y].join(',') + ',\n';
+            }
+            
+            // Main layer
+            for (let y = 0; y < mapData.height; y++) {
+                const row = mapData.mainLayer[y].map(cell => {
+                    if (cell.type === 'animated') {
+                        return cell.value;
+                    } else if (cell.type === 'tile') {
+                        return cell.id;
+                    }
+                    return 0;
+                });
+                output += row.join(',') + ',\n';
+            }
+            
+            // Check if top layer has any non-zero values
+            let hasTopLayer = false;
+            for (let y = 0; y < mapData.height && !hasTopLayer; y++) {
+                for (let x = 0; x < mapData.width && !hasTopLayer; x++) {
+                    if (mapData.topLayer[y][x] > 0) {
+                        hasTopLayer = true;
+                    }
+                }
+            }
+            
+            output += (hasTopLayer ? '1' : '0') + '\n';
+            
+            // Top layer (if exists)
+            if (hasTopLayer) {
+                for (let y = 0; y < mapData.height; y++) {
+                    output += mapData.topLayer[y].join(',') + ',\n';
+                }
+            }
+            
+            document.getElementById('exportText').value = output;
+        }
+        
+        function copyToClipboard() {
+            const exportText = document.getElementById('exportText');
+            exportText.select();
+            document.execCommand('copy');
+            alert('Map data copied to clipboard!');
+        }
+        
+        function downloadMap() {
+            const exportText = document.getElementById('exportText').value;
+            if (!exportText) {
+                alert('Please generate map data first!');
+                return;
+            }
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `map_${mapData.width}x${mapData.height}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

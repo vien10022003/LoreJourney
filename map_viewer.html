@@ -556,8 +556,8 @@
                         }
                     }
                     
-                    // Player spawn
-                    if (x === mapData.playerSpawn.x && y === mapData.playerSpawn.y) {
+                    // Player spawn (flip Y coordinate)
+                    if (x === mapData.playerSpawn.x && y === (mapData.height - 1 - mapData.playerSpawn.y)) {
                         ctx.strokeStyle = '#1abc9c';
                         ctx.lineWidth = 3;
                         ctx.strokeRect(canvasX + 2, canvasY + 2, scaledTileSize - 4, scaledTileSize - 4);
