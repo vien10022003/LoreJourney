@@ -318,7 +318,8 @@
             <div class="tools">
                 <button onclick="clearLayer()">Clear Current Layer</button>
                 <button onclick="fillLayer()">Fill Current Layer</button>
-                <button onclick="copyFromTemplate()">Copy from Template</button>
+                <button onclick="loadTemplateFile()">Copy from Template</button>
+                <input type="file" id="templateFile" accept=".txt" style="display: none;">
                 <label>
                     <input type="checkbox" id="showGrid" checked> Show Grid
                 </label>
@@ -397,6 +398,10 @@
             document.getElementById('textureFile').click();
         }
         
+        function loadTemplateFile() {
+            document.getElementById('templateFile').click();
+        }
+        
         document.getElementById('textureFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -411,6 +416,17 @@
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+        });
+        
+        document.getElementById('templateFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                copyFromTemplateFile(e.target.result);
+            };
+            reader.readAsText(file);
         });
         
         function createTilePalette() {
@@ -877,8 +893,91 @@
             renderMap();
         }
         
+        function copyFromTemplateFile(fileContent) {
+            try {
+                const lines = fileContent.trim().split('\n');
+                let lineIndex = 0;
+                
+                // Read header information
+                const templateWidth = parseInt(lines[lineIndex++]);
+                const templateHeight = parseInt(lines[lineIndex++]);
+                const playerX = parseInt(lines[lineIndex++]);
+                const playerY = parseInt(lines[lineIndex++]);
+                const isDark = parseInt(lines[lineIndex++]);
+                const weather = parseInt(lines[lineIndex++]);
+                
+                // Update map settings if different
+                if (templateWidth !== mapData.width || templateHeight !== mapData.height) {
+                    document.getElementById('mapWidth').value = templateWidth;
+                    document.getElementById('mapHeight').value = templateHeight;
+                    mapData.width = templateWidth;
+                    mapData.height = templateHeight;
+                    setupMapCanvas();
+                }
+                
+                // Update other settings
+                document.getElementById('playerX').value = playerX;
+                document.getElementById('playerY').value = playerY;
+                document.getElementById('isDark').value = isDark;
+                document.getElementById('weather').value = weather;
+                mapData.playerSpawn.x = playerX;
+                mapData.playerSpawn.y = playerY;
+                mapData.isDark = isDark;
+                mapData.weather = weather;
+                
+                // Initialize layers with new dimensions
+                mapData.bottomLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill(0));
+                mapData.mainLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill({ type: 'tile', id: 0 }));
+                mapData.topLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill(0));
+                
+                // Read bottom layer
+                for (let y = 0; y < templateHeight; y++) {
+                    const rowData = lines[lineIndex++].replace(/,$/, '').split(',').map(x => parseInt(x));
+                    for (let x = 0; x < templateWidth && x < rowData.length; x++) {
+                        mapData.bottomLayer[y][x] = rowData[x];
+                    }
+                }
+                
+                // Read main layer
+                for (let y = 0; y < templateHeight; y++) {
+                    const rowData = lines[lineIndex++].replace(/,$/, '').split(',');
+                    for (let x = 0; x < templateWidth && x < rowData.length; x++) {
+                        const value = rowData[x].trim();
+                        if (value.startsWith('a') && value.includes('|')) {
+                            // Special animated tile
+                            mapData.mainLayer[y][x] = { type: 'animated', value: value };
+                        } else {
+                            // Regular tile
+                            mapData.mainLayer[y][x] = { type: 'tile', id: parseInt(value) };
+                        }
+                    }
+                }
+                
+                // Check if there's a top layer
+                if (lineIndex < lines.length) {
+                    const hasTopLayer = parseInt(lines[lineIndex++]);
+                    if (hasTopLayer && lineIndex < lines.length) {
+                        // Read top layer
+                        for (let y = 0; y < templateHeight && lineIndex < lines.length; y++) {
+                            const rowData = lines[lineIndex++].replace(/,$/, '').split(',').map(x => parseInt(x));
+                            for (let x = 0; x < templateWidth && x < rowData.length; x++) {
+                                mapData.topLayer[y][x] = rowData[x];
+                            }
+                        }
+                    }
+                }
+                
+                renderMap();
+                alert('Template loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert('Error loading template file. Please check the file format.');
+            }
+        }
+        
         function copyFromTemplate() {
-            // Copy from the provided template
+            // Keep the old hardcoded template as backup
             if (mapData.width === 15 && mapData.height === 13) {
                 const templateBottom = [
                     [18,18,18,18,18,18,19,36,17,18,18,18,18,18,18],
