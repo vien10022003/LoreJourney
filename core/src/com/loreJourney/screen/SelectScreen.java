@@ -69,11 +69,11 @@ public abstract class SelectScreen extends AbstractScreen {
         enterStyle.imageDown = new TextureRegionDrawable(rm.enterButton[1][0]);
         enterButton = new ImageButton(enterStyle);
 
-        enterLabel = new Label("ENTER", new Label.LabelStyle(rm.pixel10, new Color(79 / 255.f, 79 / 255.f, 117 / 255.f, 1)));
+        enterLabel = new Label("ENTER", new Label.LabelStyle(rm.pixel10, Color.WHITE));
         enterLabel.setTouchable(Touchable.disabled);
         enterLabel.setSize(79, 28);
         enterLabel.setAlignment(Align.center);
-        enterLabel.setFontScale(1.5f);
+        enterLabel.setFontScale(1.2f);
 
         enterButtonGroup.addActor(enterButton);
         enterButtonGroup.addActor(enterLabel);

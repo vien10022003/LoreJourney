@@ -11,7 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.loreJourney.inventory.Item;
+// REMOVED: Inventory system disabled
+// import com.loreJourney.inventory.Item;
 import com.loreJourney.main.LoreJourney;
 import com.loreJourney.map.GameMap;
 import com.loreJourney.resource.ResourceManager;
@@ -39,7 +40,6 @@ public class VictoryScreen extends AbstractScreen {
     // information
     private Image infoBg;
     private Label info;
-    private static final int NUM_COLS = 5;
 
     private GameMap gameMap;
 
@@ -69,7 +69,8 @@ public class VictoryScreen extends AbstractScreen {
 
         exitButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                for (Item item : gameMap.itemsObtained) item.actor.remove();
+                // REMOVED: Inventory system disabled
+                // for (Item item : gameMap.itemsObtained) item.actor.remove();
                 game.menuScreen.transitionIn = 0;
                 setFadeScreen(game.menuScreen);
             }
@@ -109,7 +110,8 @@ public class VictoryScreen extends AbstractScreen {
             public void clicked(InputEvent event, float x, float y) {
                 if (gameMap.levelIndex != rm.worlds.get(gameMap.worldIndex).numLevels - 1) {
                     // switch back to level select screen
-                    for (Item item : gameMap.itemsObtained) item.actor.remove();
+                    // REMOVED: Inventory system disabled
+                    // for (Item item : gameMap.itemsObtained) item.actor.remove();
                     game.levelSelectScreen.setWorld(gameMap.worldIndex);
                     rm.menuTheme.play();
                     setFadeScreen(game.levelSelectScreen);
@@ -148,7 +150,8 @@ public class VictoryScreen extends AbstractScreen {
             "Items obtained: ";
         info.setText(infoText);
 
-        // show items obtained's image actors in a grid
+        // REMOVED: Inventory system disabled - no items to show
+        /*// show items obtained's image actors in a grid
         for (int i = 0; i < gameMap.itemsObtained.size; i++) {
             int x = i % NUM_COLS;
             int y = i / NUM_COLS;
@@ -156,7 +159,7 @@ public class VictoryScreen extends AbstractScreen {
             item.actor.remove();
             item.actor.setPosition(LoreJourney.V_WIDTH / 2 - 70 + 8 + (x * 24), 34 - (y * 16));
             stage.addActor(item.actor);
-        }
+        }*/
     }
 
     public void update(float dt) {}

@@ -1,25 +1,16 @@
 package com.loreJourney.screen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.loreJourney.event.Battle;
 import com.loreJourney.event.EventState;
 import com.loreJourney.main.LoreJourney;
 import com.loreJourney.map.GameMap;
-import com.loreJourney.parallax.Background;
 import com.loreJourney.resource.ResourceManager;
 import com.loreJourney.screen.game.DialogScreen;
-import com.loreJourney.screen.game.LevelUpScreen;
-import com.loreJourney.screen.game.TransitionScreen;
 import com.loreJourney.ui.Hud;
-import com.loreJourney.ui.battleui.BattleUIHandler;
 
 /**
  * Handles all gameplay.
@@ -32,17 +23,10 @@ public class GameScreen extends AbstractScreen {
 
     public GameMap gameMap;
     public Hud hud;
-    public BattleUIHandler battleUIHandler;
-    public Battle battle;
-    public TransitionScreen transition;
-    public LevelUpScreen levelUp;
     public DialogScreen dialog;
 
     // input
     public InputMultiplexer multiplexer;
-
-    // battle background
-    private Background[] bg;
 
     // key
     private int worldIndex;
@@ -58,26 +42,12 @@ public class GameScreen extends AbstractScreen {
         currentEvent = EventState.MOVING;
 
         gameMap = new GameMap(this, game.player, rm);
-        battle = new Battle(this, gameMap.tileMap, gameMap.player);
         hud = new Hud(this, gameMap.tileMap, gameMap.player, rm);
-        battleUIHandler = new BattleUIHandler(this, gameMap.tileMap, gameMap.player, battle, rm);
-        transition = new TransitionScreen(this, battle, battleUIHandler, hud, gameMap.player, rm);
-        levelUp = new LevelUpScreen(this, gameMap.tileMap, gameMap.player, rm);
         dialog = new DialogScreen(this, gameMap.tileMap, gameMap.player, rm);
-
-        // create bg
-        bg = new Background[2];
-        // sky
-        bg[0] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0.3f, 0));
-        // field
-        bg[1] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0, 0));
-
 
         // input multiplexer
         multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hud.getStage());
-        multiplexer.addProcessor(battleUIHandler.getStage());
-        multiplexer.addProcessor(levelUp.getStage());
         multiplexer.addProcessor(dialog.getStage());
     }
 
@@ -100,35 +70,14 @@ public class GameScreen extends AbstractScreen {
             hud.deathGroup.setVisible(false);
             gameMap.init(worldIndex, levelIndex);
             gameMap.player.moving = -1;
-            battle.tileMap = gameMap.tileMap;
             hud.setTileMap(gameMap.tileMap);
-            battleUIHandler.setTileMap(gameMap.tileMap);
-            levelUp.setTileMap(gameMap.tileMap);
             dialog.setTileMap(gameMap.tileMap);
-
-            // update bg
-            createBackground(gameMap.worldIndex);
 
             hud.toggle(true);
             hud.touchDown = false;
             hud.shade.setVisible(false);
             hud.startLevelDescriptor();
         }
-    }
-
-    /**
-     * Creates the dynamic background
-     * @param bgIndex is the theme of bg
-     */
-    private void createBackground(int bgIndex) {
-        // background image array is ordered by depth
-        TextureRegion[] images = rm.battleBackgrounds400x240[bgIndex];
-        for (int i = 0; i < 2; i++) bg[i].setImage(images[i]);
-        // set background movement for the specific worlds
-        if (bgIndex == 0) bg[0].setVector(40, 0);
-        else if (bgIndex == 1) bg[0].setVector(0, 0);
-        else if (bgIndex == 2) bg[0].setVector(40, 0);
-        bg[1].setVector(0, 0);
     }
 
     /**
@@ -176,18 +125,9 @@ public class GameScreen extends AbstractScreen {
             hud.update(dt);
         }
 
-        if (currentEvent == EventState.BATTLING) {
-            // update bg
-            for (int i = 0; i < bg.length; i++) {
-                bg[i].update(dt);
-            }
-            battleUIHandler.update(dt);
-        }
-
-        if (currentEvent == EventState.TRANSITION) transition.update(dt);
-        if (currentEvent == EventState.LEVEL_UP) levelUp.update(dt);
         if (currentEvent == EventState.TILE_EVENT) dialog.update(dt);
-        if (currentEvent == EventState.INVENTORY) game.inventoryUI.update(dt);
+        // REMOVED: Inventory system disabled
+        // if (currentEvent == EventState.INVENTORY) game.inventoryUI.update(dt);
     }
 
     public void render(float dt) {
@@ -202,16 +142,8 @@ public class GameScreen extends AbstractScreen {
             // fix fading
             if (batchFade) game.batch.setColor(Color.WHITE);
 
-            if (currentEvent == EventState.BATTLING || transition.renderBattle) {
-                // bg camera
-                game.batch.setProjectionMatrix(battleUIHandler.getStage().getCamera().combined);
-                for (int i = 0; i < bg.length; i++) {
-                    bg[i].render(game.batch);
-                }
-            }
-
             if (currentEvent == EventState.MOVING || currentEvent == EventState.INVENTORY ||
-                transition.renderMap || currentEvent == EventState.TILE_EVENT ||
+                currentEvent == EventState.TILE_EVENT ||
                 currentEvent == EventState.DEATH || currentEvent == EventState.PAUSE) {
                 // map camera
                 game.batch.setProjectionMatrix(cam.combined);
@@ -224,13 +156,9 @@ public class GameScreen extends AbstractScreen {
 
         if (currentEvent == EventState.MOVING || currentEvent == EventState.DEATH || currentEvent == EventState.PAUSE)
             hud.render(dt);
-        if (currentEvent == EventState.BATTLING || transition.renderBattle)
-            battleUIHandler.render(dt);
-        if (currentEvent == EventState.LEVEL_UP || transition.renderLevelUp)
-            levelUp.render(dt);
         if (currentEvent == EventState.TILE_EVENT) dialog.render(dt);
-        if (currentEvent == EventState.INVENTORY) game.inventoryUI.render(dt);
-        if (currentEvent == EventState.TRANSITION) transition.render(dt);
+        // REMOVED: Inventory system disabled
+        // if (currentEvent == EventState.INVENTORY) game.inventoryUI.render(dt);
 
         //game.profile("GameScreen");
     }
@@ -238,9 +166,7 @@ public class GameScreen extends AbstractScreen {
     public void dispose() {
         super.dispose();
         hud.dispose();
-        battleUIHandler.dispose();
         dialog.dispose();
-        levelUp.dispose();
     }
 
     /**
