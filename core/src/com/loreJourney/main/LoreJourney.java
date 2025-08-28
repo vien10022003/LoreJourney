@@ -14,7 +14,7 @@ import com.loreJourney.resource.ResourceManager;
 import com.loreJourney.save.Save;
 import com.loreJourney.screen.*;
 import com.loreJourney.screen.game.VictoryScreen;
-import com.loreJourney.ui.inventory.InventoryUI;
+
 
 /**
  * "LoreJourney" is a RPG/Dungeon Crawler based on RNG
@@ -29,8 +29,7 @@ public class LoreJourney extends Game {
     public static final String TITLE = "LoreJourney Version " + VERSION;
 
     // Links
-    public static final String GITHUB = "https://github.com/mingli1/LoreJourney";
-    public static final String YOUTUBE = "https://www.youtube.com/channel/UC-oA-vkeYrgEy23Sq2PLC8w/videos?shelf_id=0&sort=dd&view=0";
+    public static final String GITHUB = "https://github.com/vien10022003/LoreJourney";
 
     // Desktop screen dimensions
     public static final int V_WIDTH = 200;
@@ -54,13 +53,9 @@ public class LoreJourney extends Game {
     public GameScreen gameScreen;
     public WorldSelectScreen worldSelectScreen;
     public LevelSelectScreen levelSelectScreen;
-    public InventoryScreen inventoryScreen;
-    public ShopScreen shopScreen;
-    public SpecialMoveScreen smoveScreen;
     public StatisticsScreen statisticsScreen;
-    public InventoryUI inventoryUI;
-    public VictoryScreen victoryScreen;
     public SettingsScreen settingsScreen;
+    public VictoryScreen victoryScreen;
 
     // main bg
     public Background[] menuBackground;
@@ -81,16 +76,14 @@ public class LoreJourney extends Game {
         fps.setFontScale(0.5f);
         fps.setVisible(player.settings.showFps);
 
-        inventoryUI = new InventoryUI(this, player, rm);
+        // Initialize screens first
         menuScreen = new MenuScreen(this, rm);
         gameScreen = new GameScreen(this, rm);
         worldSelectScreen = new WorldSelectScreen(this, rm);
         levelSelectScreen = new LevelSelectScreen(this, rm);
-        inventoryScreen = new InventoryScreen(this, rm);
-        shopScreen = new ShopScreen(this, rm);
-        smoveScreen = new SpecialMoveScreen(this, rm);
-        statisticsScreen = new StatisticsScreen(this, rm);
         victoryScreen = new VictoryScreen(this, rm);
+        
+        statisticsScreen = new StatisticsScreen(this, rm);
         settingsScreen = new SettingsScreen(this, rm);
 
         // create parallax background
@@ -127,14 +120,11 @@ public class LoreJourney extends Game {
 
         rm.dispose();
         menuScreen.dispose();
-        gameScreen.dispose();
         worldSelectScreen.dispose();
         levelSelectScreen.dispose();
-        inventoryScreen.dispose();
-        shopScreen.dispose();
-        statisticsScreen.dispose();
-        inventoryUI.dispose();
         victoryScreen.dispose();
+        
+        statisticsScreen.dispose();
         settingsScreen.dispose();
 
         GLProfiler.disable();

@@ -1,13 +1,9 @@
 package com.loreJourney.entity.enemy;
 
 import com.badlogic.gdx.math.Vector2;
-import com.loreJourney.animation.AnimationManager;
-import com.loreJourney.battle.Moveset;
-import com.loreJourney.battle.StatusSet;
 import com.loreJourney.entity.Entity;
 import com.loreJourney.map.TileMap;
 import com.loreJourney.resource.ResourceManager;
-import com.loreJourney.resource.Util;
 
 /**
  * An Entity that the Player can battle if encountered
@@ -18,9 +14,6 @@ import com.loreJourney.resource.Util;
  */
 public abstract class Enemy extends Entity {
 
-    // battle status effects
-    public StatusSet statusEffects;
-
     // battle sprite size
     // (used for making sprites bigger or smaller for effect)
     public int battleSize;
@@ -30,8 +23,6 @@ public abstract class Enemy extends Entity {
 
     public Enemy(String id, Vector2 position, TileMap tileMap, ResourceManager rm) {
         super(id, position, tileMap, rm);
-        moveset = new Moveset(rm);
-        statusEffects = new StatusSet(false, rm);
         battleSize = 48;
         numRespawn = 0;
     }

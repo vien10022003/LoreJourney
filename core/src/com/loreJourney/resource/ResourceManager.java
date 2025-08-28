@@ -7,17 +7,17 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
+// REMOVED: import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.loreJourney.battle.Move;
-import com.loreJourney.inventory.Item;
-import com.loreJourney.inventory.ShopItem;
+// REMOVED: import com.loreJourney.battle.Move;
+// REMOVED: Inventory system disabled
+// import com.loreJourney.inventory.Item;
+// import com.loreJourney.inventory.ShopItem;
 import com.loreJourney.map.Level;
 import com.loreJourney.map.World;
 
@@ -129,20 +129,18 @@ public class ResourceManager {
     // Worlds
     public Array<World> worlds = new Array<World>();
 
-    // Arrays for each type of Move
-    // Contains the entire pool of moves for each type
-    public final Array<Move> accurateMoves = new Array<Move>();
-    public final Array<Move> wideMoves = new Array<Move>();
-    public final Array<Move> critMoves = new Array<Move>();
-    public final Array<Move> healMoves = new Array<Move>();
+    // REMOVED: Move system arrays - no longer needed
+    // public final Array<Move> accurateMoves = new Array<Move>();
+    // public final Array<Move> wideMoves = new Array<Move>();
+    // public final Array<Move> critMoves = new Array<Move>();
+    // public final Array<Move> healMoves = new Array<Move>();
+    // public final Array<Array<Move>> bossMoves = new Array<Array<Move>>();
 
-    // contains the movepools of each boss referenced by bossIndex
-    public final Array<Array<Move>> bossMoves = new Array<Array<Move>>();
-
+    // REMOVED: Inventory system disabled - items and shop items removed
     // contains all the items separated by rarity
-    public final Array<Array<Item>> items = new Array<Array<Item>>();
+    // public final Array<Array<Item>> items = new Array<Array<Item>>();
     // contains all the shop items separated by rarity
-    public final Array<Array<ShopItem>> shopItems = new Array<Array<ShopItem>>();
+    // public final Array<Array<ShopItem>> shopItems = new Array<Array<ShopItem>>();
 
     // Fonts
     public final BitmapFont pixel10;
@@ -284,13 +282,14 @@ public class ResourceManager {
         battlestart = assetManager.get("sfx/battle_start.ogg", Sound.class);
 
         loadWorlds();
-        loadMoves();
-        loadItems();
+        // loadMoves(); // REMOVED: No longer loading moves system
+        // loadItems(); // REMOVED: Inventory system disabled
 
         // set smove icons
-        for (int i = 0; i < Util.SMOVES_ORDER_BY_ID.length; i++) {
-            Util.SMOVES_ORDER_BY_ID[i].icon = new Image(smoveicons[i]);
-        }
+        // REMOVED: Commented out since no moves system
+        // for (int i = 0; i < Util.SMOVES_ORDER_BY_ID.length; i++) {
+        //     Util.SMOVES_ORDER_BY_ID[i].icon = new Image(smoveicons[i]);
+        // }
     }
 
     /**
@@ -332,238 +331,6 @@ public class ResourceManager {
 
             worldIndex++;
         }
-    }
-
-    private void loadMoves() {
-        // parse moves.json
-        JsonValue base = jsonReader.parse(Gdx.files.internal("moves/moves.json"));
-        JsonValue boss = jsonReader.parse(Gdx.files.internal("moves/boss_moves.json"));
-
-        // accurate Moves
-        for (JsonValue move : base.get("accurate")) {
-            Move m = new Move(move.getInt("type"), move.getString("name"),
-                    move.getFloat("minDamage"), move.getFloat("maxDamage"));
-            accurateMoves.add(m);
-        }
-        //System.out.println("accurate: " + accurateMoves.size);
-        // wide Moves
-        for (JsonValue move : base.get("wide")) {
-            Move m = new Move(move.getInt("type"), move.getString("name"),
-                    move.getFloat("minDamage"), move.getFloat("maxDamage"));
-            wideMoves.add(m);
-        }
-        //System.out.println("wide: " + wideMoves.size);
-        // crit Moves
-        for (JsonValue move : base.get("crit")) {
-            Move m = new Move(move.getString("name"), move.getFloat("damage"), move.getInt("crit"));
-            critMoves.add(m);
-        }
-        //System.out.println("crit: " + critMoves.size);
-        // heal Moves
-        for (JsonValue move : base.get("healing")) {
-            Move m = new Move(move.getString("name"), move.getFloat("minHeal"),
-                    move.getFloat("maxHeal"), move.getInt("dmgReduction"));
-            healMoves.add(m);
-        }
-        //System.out.println("heal: " + healMoves.size);
-
-        Array<Move> slimeMoves = new Array<Move>();
-        // load boss moves
-        for (JsonValue move : boss.get("slime")) {
-            if (move.getInt("type") == 1)
-                slimeMoves.add(new Move(1, move.getString("name"),
-                        move.getFloat("minDamage"), move.getFloat("maxDamage")));
-            else
-                slimeMoves.add(new Move(move.getString("name"),
-                        move.getFloat("minHeal"), move.getFloat("maxHeal"), move.getInt("dmgReduction")));
-        }
-        bossMoves.add(slimeMoves);
-
-        Array<Move> rrMoves = new Array<Move>();
-        // load boss moves
-        for (JsonValue move : boss.get("redreaper")) {
-            if (move.getInt("type") == 2)
-                rrMoves.add(new Move(move.getString("name"),
-                    move.getFloat("damage"), move.getInt("crit")));
-            else
-                rrMoves.add(new Move(move.getString("name"),
-                    move.getFloat("minHeal"), move.getFloat("maxHeal"), move.getInt("dmgReduction")));
-        }
-        bossMoves.add(rrMoves);
-
-        Array<Move> igMoves = new Array<Move>();
-        for (JsonValue move : boss.get("icegolem")) {
-            if (move.getInt("type") == 0)
-                igMoves.add(new Move(0, move.getString("name"),
-                    move.getFloat("minDamage"), move.getFloat("maxDamage")));
-        }
-        bossMoves.add(igMoves);
-    }
-
-    private void loadItems() {
-        // parse items.json
-        JsonValue itemPool = jsonReader.parse(Gdx.files.internal("items/items.json"));
-        // parse shopitems.json
-        JsonValue shopitemPool = jsonReader.parse(Gdx.files.internal("items/shopitems.json"));
-
-        // load by rarity
-        for (int i = 0; i < 4; i++) {
-            loadItems(itemPool, i, "rare" + i);
-            loadShopItems(shopitemPool, i, "rare" + i);
-        }
-    }
-
-    private void loadItems(JsonValue itemPool, int rarity, String r) {
-        Array<Item> rare = new Array<Item>();
-        for (JsonValue i : itemPool.get(r)) {
-            int type = i.getInt("type");
-            if (type == 0) {
-                rare.add(new Item(this, i.getString("name"), i.getString("desc"),
-                    rarity, i.getInt("imgIndex"), i.getInt("minLevel"), i.getInt("maxLevel"),
-                    i.getInt("hp"), i.getInt("exp"), i.getInt("sell")));
-            }
-            else if (type == 1) {
-                rare.add(new Item(this, i.getString("name"), i.getString("desc"),
-                    rarity, i.getInt("imgIndex"), i.getInt("minLevel"), i.getInt("maxLevel"), i.getInt("sell")));
-            }
-            else if (type >= 2 && type <= 9) {
-                rare.add(new Item(this, i.getString("name"), i.getString("desc"),
-                    i.getInt("type"), rarity, i.getInt("imgIndex"), i.getInt("minLevel"), i.getInt("maxLevel"),
-                    i.getInt("mhp"), i.getInt("dmg"), i.getInt("acc"), i.getInt("sell")));
-            }
-            else if (type == 10) {
-                rare.add(new Item(this, i.getString("name"), i.getString("desc"), rarity, i.getInt("imgIndex"),
-                    i.getInt("minLevel"), i.getInt("maxLevel"), i.getInt("eChance"), i.getInt("sell")));
-            }
-        }
-        items.add(rare);
-    }
-
-    private void loadShopItems(JsonValue itemPool, int rarity, String r) {
-        Array<ShopItem> rare = new Array<ShopItem>();
-        for (JsonValue i : itemPool.get(r)) {
-            int type = i.getInt("type");
-            if (type == 0) {
-                rare.add(new ShopItem(this, i.getString("name"), i.getString("desc"),
-                    rarity, i.getInt("imgIndex"), i.getInt("level"), i.getInt("hp"),
-                    i.getInt("exp"), i.getInt("sell"), i.getInt("price")));
-            }
-            else if (type >= 2 && type <= 9) {
-                rare.add(new ShopItem(this, i.getString("name"), i.getString("desc"), type, rarity, i.getInt("imgIndex"),
-                    i.getInt("level"), i.getInt("mhp"), i.getInt("dmg"), i.getInt("acc"), i.getInt("sell"), i.getInt("price")));
-            }
-            else if (type == 10) {
-                rare.add(new ShopItem(this, i.getString("name"), i.getString("desc"), rarity, i.getInt("imgIndex"),
-                    i.getInt("level"), i.getInt("eChance"), i.getInt("sell"), i.getInt("price")));
-            }
-        }
-        shopItems.add(rare);
-    }
-
-    private Item getItemCopy(Item item) {
-        if (item.type == 0)
-            return new Item(this, item.name, item.desc, item.rarity, item.imgIndex, item.minLevel, item.maxLevel, item.hp, item.exp, item.sell);
-        else if (item.type == 1)
-            return new Item(this, item.name, item.desc, item.rarity, item.imgIndex, item.minLevel, item.maxLevel, item.sell);
-        else if (item.type >= 2 && item.type <= 9)
-            return new Item(this, item.name, item.desc, item.type, item.rarity, item.imgIndex, item.minLevel, item.maxLevel,
-                item.mhp, item.dmg, item.acc, item.sell);
-        else
-            return new Item(this, item.name, item.desc, item.rarity, item.imgIndex, item.minLevel, item.maxLevel, item.eChance, item.sell);
-    }
-
-    /**
-     * Returns a copy of a random item with weighted rarity from the pool
-     * Will only return items that have ranges that contain a given level
-     * Used for monster drops based on enemy level
-     * Returns null if no item that fits the level
-     *
-     * @param rarity
-     * @param level
-     * @return
-     */
-    public Item getItem(int rarity, int level) {
-        // items sorted by level range and rarity
-        Array<Item> levelItems = new Array<Item>();
-        for (Item item : items.get(rarity)) {
-            if (level >= item.minLevel && level <= item.maxLevel) {
-                levelItems.add(item);
-            }
-        }
-        if (levelItems.size == 0) return null;
-        Item selected = levelItems.get(MathUtils.random(levelItems.size - 1));
-        return getItemCopy(selected);
-    }
-
-    /**
-     * Returns a copy of a random item from the item pool given rarity
-     * This was made so that duplicate Item actors could be created
-     *
-     * @param rarity
-     * @return
-     */
-    public Item getItem(int rarity) {
-        Item item = items.get(rarity).get(MathUtils.random(items.get(rarity).size - 1));
-        return getItemCopy(item);
-    }
-
-    /**
-     * Returns a copy of an indexed Item from the item pool
-     *
-     * @param rarity
-     * @param index
-     * @return
-     */
-    public Item getItemFromKey(int rarity, int index) {
-        Item item = items.get(rarity).get(index);
-        return getItemCopy(item);
-    }
-
-    /**
-     * Returns a random Item from the pool with weighted rarity and in a given level range
-     * @param level
-     * @return
-     */
-    public Item getRandomItem(int level) {
-        int k = MathUtils.random(99);
-        // common
-        if (k < Util.COMMON_ITEM_RNG_INDEX) return getItem(0, level);
-            // rare
-        else if (k < Util.RARE_ITEM_RNG_INDEX) return getItem(1, level);
-            // epic
-        else if (k < Util.EPIC_ITEM_RNG_INDEX) return getItem(2, level);
-            // legendary
-        else if (k < Util.LEGENDARY_ITEM_RNG_INDEX) return getItem(3, level);
-
-        return null;
-    }
-
-    /**
-     * Returns a random Item from the item pool with weighted rarity
-     *
-     * @return
-     */
-    public Item getRandomItem() {
-        int k = MathUtils.random(99);
-        // common
-        if (k < Util.COMMON_ITEM_RNG_INDEX) return getItem(0);
-        // rare
-        else if (k < Util.RARE_ITEM_RNG_INDEX) return getItem(1);
-        // epic
-        else if (k < Util.EPIC_ITEM_RNG_INDEX) return getItem(2);
-        // legendary
-        else if (k < Util.LEGENDARY_ITEM_RNG_INDEX) return getItem(3);
-
-        return null;
-    }
-
-    /**
-     * Returns a random Item from the item pool regardless of rarity
-     *
-     * @return
-     */
-    public Item getRandomItemFromPool() {
-        return getItem(MathUtils.random(3));
     }
 
     /**

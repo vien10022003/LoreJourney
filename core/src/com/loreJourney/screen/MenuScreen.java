@@ -52,7 +52,6 @@ public class MenuScreen extends MenuExtensionScreen {
     private Image frame;
     private Label copyright;
     private Label github;
-    private Label youtube;
     private Image[] creditsIcons;
     private ImageButton exitButton;
 
@@ -142,27 +141,30 @@ public class MenuScreen extends MenuExtensionScreen {
             optionButtons[i].getImage().setFillParent(true);
             stage.addActor(optionButtons[i]);
         }
-        // inventory button
-        optionButtons[0].setPosition(6, 85);
+        // REMOVED: inventory button disabled
+        // optionButtons[0].setPosition(6, 85);
+        optionButtons[0].setVisible(false); // Hide inventory button
         // settings button
         optionButtons[1].setPosition(171, 85);
-        // shop button
-        optionButtons[2].setPosition(6, 50);
+        // REMOVED: shop button disabled  
+        // optionButtons[2].setPosition(6, 50);
+        optionButtons[2].setVisible(false); // Hide shop button
         // smove button
-        optionButtons[3].setPosition(6, 15);
+        // optionButtons[3].setPosition(6, 15);
+        optionButtons[3].setVisible(false); // Hide smove button
         // statistics button
-        optionButtons[4].setPosition(170, 50);
+        optionButtons[4].setPosition(6, 85);
         // credits button
-        optionButtons[5].setPosition(170, 15);
+        optionButtons[5].setPosition(170, 50);
 
-        // inventory screen
-        optionButtons[0].addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
-                setSlideScreen(game.inventoryScreen, false);
-            }
-        });
+        // REMOVED: inventory screen disabled
+        // optionButtons[0].addListener(new ClickListener() {
+        //     @Override
+        //     public void clicked(InputEvent event, float x, float y) {
+        //         if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+        //         setSlideScreen(game.inventoryScreen, false);
+        //     }
+        // });
         // settings screen
         optionButtons[1].addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -171,20 +173,20 @@ public class MenuScreen extends MenuExtensionScreen {
                 setSlideScreen(game.settingsScreen, true);
             }
         });
-        // shop screen
-        optionButtons[2].addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
-                setSlideScreen(game.shopScreen, false);
-            }
-        });
+        // REMOVED: shop screen disabled
+        // optionButtons[2].addListener(new ClickListener() {
+        //     public void clicked(InputEvent event, float x, float y) {
+        //         if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+        //         setSlideScreen(game.shopScreen, false);
+        //     }
+        // });
         // smove screen
-        optionButtons[3].addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
-                setSlideScreen(game.smoveScreen, false);
-            }
-        });
+        // optionButtons[3].addListener(new ClickListener() {
+        //     public void clicked(InputEvent event, float x, float y) {
+        //         if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+        //         setSlideScreen(game.smoveScreen, false);
+        //     }
+        // });
         // statistics screen
         optionButtons[4].addListener(new ClickListener() {
             @Override
@@ -233,15 +235,15 @@ public class MenuScreen extends MenuExtensionScreen {
             }
         });
 
-        copyright = new Label("LoreJourney V" + LoreJourney.VERSION + "\nCopyright (c) 2018 Ming Li",
+        copyright = new Label("LoreJourney V" + LoreJourney.VERSION + "\nA game made by a team \n" + "from KMA",
             new Label.LabelStyle(rm.pixel10, Color.WHITE));
         copyright.setFontScale(0.75f);
-        copyright.setPosition(53, 70);
+        copyright.setPosition(53, 60);
         copyright.setTouchable(Touchable.disabled);
         credits.addActor(copyright);
 
         github = new Label("GITHUB", new Label.LabelStyle(rm.pixel10, new Color(140 / 255.f, 60 / 255.f, 1, 1)));
-        github.setPosition(80, 56);
+        github.setPosition(80, 44);
         credits.addActor(github);
         github.addListener(new ClickListener() {
             @Override
@@ -250,30 +252,17 @@ public class MenuScreen extends MenuExtensionScreen {
             }
         });
 
-        youtube = new Label("YOUTUBE", new Label.LabelStyle(rm.pixel10, Color.RED));
-        youtube.setPosition(80, 38);
-        credits.addActor(youtube);
-        youtube.addListener(new ClickListener() {
+        creditsIcons = new Image[2];
+        
+        creditsIcons[1] = new Image(rm.creditsicons[1]);
+        creditsIcons[1].setPosition(56, 40 + 0 * 18);
+        creditsIcons[1].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.net.openURI(LoreJourney.YOUTUBE);
+                Gdx.net.openURI(LoreJourney.GITHUB);
             }
         });
-
-        creditsIcons = new Image[2];
-        for (int i = 0; i < 2; i++) {
-            final int index = i;
-            creditsIcons[i] = new Image(rm.creditsicons[i]);
-            creditsIcons[i].setPosition(56, 34 + i * 18);
-            creditsIcons[i].addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    if (index == 1) Gdx.net.openURI(LoreJourney.GITHUB);
-                    else Gdx.net.openURI(LoreJourney.YOUTUBE);
-                }
-            });
-            credits.addActor(creditsIcons[i]);
-        }
+        credits.addActor(creditsIcons[1]);
 
         stage.addActor(credits);
     }

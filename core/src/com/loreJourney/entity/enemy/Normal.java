@@ -58,7 +58,7 @@ public class Normal extends Enemy {
         int maxDmg = MathUtils.random(Util.ENEMY_INIT_MIN_MAXDMG, Util.ENEMY_INIT_MAX_MAXDMG);
 
         for (int i = 0; i < this.level - 1; i++) {
-            int dmgMean = MathUtils.random(Util.ENEMY_MIN_DMG_INCREASE, Util.ENEMY_MAX_DMG_INCREASE);
+            int dmgMean = MathUtils.random(Util.ENEMY_MIN_DMG_INCREASE, Util.ENEMY_MAX_DMG_INCREASE_RANGE);
             int minDmgIncrease = (dmgMean - MathUtils.random(2));
             int maxDmgIncrease = (dmgMean + MathUtils.random(2));
 

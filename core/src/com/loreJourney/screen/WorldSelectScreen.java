@@ -62,12 +62,18 @@ public class WorldSelectScreen extends SelectScreen {
                 if (clickable) {
                     clickable = false;
                     batchFade = false;
+                    
+                    // Visual feedback - change button color temporarily
+                    enterLabel.getStyle().fontColor = Color.YELLOW;
+                    
                     // fade out animation
                     stage.addAction(Actions.sequence(Actions.fadeOut(0.3f),
                         Actions.run(new Runnable() {
                             @Override
                             public void run() {
                                 clickable = true;
+                                // Reset button color
+                                enterLabel.getStyle().fontColor = Color.WHITE;
                                 game.levelSelectScreen.setWorld(worldIndex);
                                 game.setScreen(game.levelSelectScreen);
                             }

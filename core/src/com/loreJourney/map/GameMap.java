@@ -4,16 +4,15 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.utils.Array;
 import com.loreJourney.effects.Particle;
 import com.loreJourney.effects.ParticleFactory;
 import com.loreJourney.entity.Player;
 import com.loreJourney.event.EventState;
-import com.loreJourney.inventory.Inventory;
-import com.loreJourney.inventory.Item;
+// REMOVED: Inventory system disabled
+// import com.loreJourney.inventory.Inventory;
+// import com.loreJourney.inventory.Item;
 import com.loreJourney.resource.ResourceManager;
 import com.loreJourney.resource.Util;
 import com.loreJourney.screen.GameScreen;
@@ -56,7 +55,8 @@ public class GameMap {
     public long soundId;
 
     // what the player obtained during the map
-    public Array<Item> itemsObtained;
+    // REMOVED: Inventory system disabled
+    // public Array<Item> itemsObtained;
     public int expObtained;
     public int goldObtained;
 
@@ -70,7 +70,8 @@ public class GameMap {
         this.gameScreen = gameScreen;
         this.player = player;
         this.rm = rm;
-        itemsObtained = new Array<Item>();
+        // REMOVED: Inventory system disabled
+        // itemsObtained = new Array<Item>();
         particleFactory = new ParticleFactory(gameScreen.getCamera(), rm);
     }
 
@@ -89,7 +90,8 @@ public class GameMap {
         else if (worldIndex == 2) mapTheme = rm.frostyCaveTheme;
 
         // reset
-        itemsObtained.clear();
+        // REMOVED: Inventory system disabled
+        // itemsObtained.clear();
         expObtained = 0;
         goldObtained = 0;
         time = 0;
@@ -173,7 +175,9 @@ public class GameMap {
         // gold and exp lost
         int goldLost = (int) ((Util.DEATH_PENALTY / 100f) * (float) player.getGold());
         int expLost = (int) ((Util.DEATH_PENALTY / 100f) * (float) player.getExp());
-        String itemText = "";
+        
+        // REMOVED: Inventory system disabled
+        /*String itemText = "";
         if (itemsObtained.size != 0) {
             for (int i = 0; i < itemsObtained.size; i++) {
                 Item item = itemsObtained.get(i);
@@ -183,40 +187,30 @@ public class GameMap {
                 }
                 itemText += item.name + ", ";
             }
-        }
-        String deathText = "You lost " + goldLost + " G and " + expLost + " EXP.\n" +
-            (itemsObtained.size == 0 ? "\nClick to continue..." : "You also lost the following items: " + itemText);
+        }*/
+        
+        String deathText = "You lost " + goldLost + " G and " + expLost + " EXP.\n\nClick to continue...";
         gameScreen.hud.setDeathText(deathText);
 
         // apply death penalties
         player.addGold(-goldLost);
         player.addExp(-expLost);
-        if (itemsObtained.size != 0) {
+        
+        // REMOVED: Inventory system disabled
+        /*if (itemsObtained.size != 0) {
             for (Item item : itemsObtained) {
                 for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
                     if (player.inventory.getItem(i) == item)
                         player.inventory.removeItem(i);
                 }
             }
-        }
+        }*/
     }
 
     public void update(float dt) {
         player.update(dt);
         tileMap.update(dt);
 
-        // engage in battle if found
-        if (player.isBattling()) {
-            gameScreen.hud.toggle(false);
-            mapTheme.pause();
-            if (!player.settings.muteMusic) rm.battlestart.play(player.settings.musicVolume);
-            if (weather != WeatherType.NORMAL) {
-                rm.lightrain.stop(soundId);
-                rm.heavyrain.stop(soundId);
-            }
-            gameScreen.setCurrentEvent(EventState.TRANSITION);
-            gameScreen.transition.start(EventState.MOVING, EventState.BATTLING);
-        }
         // player stepped on interaction tile
         if (player.isTileInteraction()) {
             gameScreen.hud.toggle(false);
@@ -235,8 +229,9 @@ public class GameMap {
             gameScreen.hud.toggle(false);
             if (!player.settings.muteSfx) rm.teleport.play(player.settings.sfxVolume);
             player.stats.numTeleports++;
-            gameScreen.setCurrentEvent(EventState.TRANSITION);
-            gameScreen.transition.start(EventState.MOVING, EventState.MOVING);
+            // Simple teleport without transition effects
+            player.finishTeleporting();
+            gameScreen.hud.toggle(true);
         }
         // player won the map and switch to victory screen
         if (player.completedMap) {
@@ -267,7 +262,7 @@ public class GameMap {
 
             gameScreen.setCurrentEvent(EventState.PAUSE);
             player.moving = -1;
-            gameScreen.getGame().victoryScreen.init(this);
+            // Simple completion - return to menu or main screen
             if (switchable) {
                 switchable = false;
                 gameScreen.hud.getStage().addAction(Actions.sequence(Actions.fadeOut(0.3f),
@@ -277,6 +272,7 @@ public class GameMap {
                             switchable = true;
                             gameScreen.setClickable(true);
                             mapTheme.stop();
+                            gameScreen.getGame().victoryScreen.init(GameMap.this);
                             gameScreen.getGame().setScreen(gameScreen.getGame().victoryScreen);
                         }
                     })));

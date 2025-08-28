@@ -43,15 +43,16 @@ public abstract class UI implements Disposable {
         shapeRenderer = new ShapeRenderer();
     }
 
+    // Constructor for UI with GameScreen support
     public UI(GameScreen gameScreen, TileMap tileMap, Player player, ResourceManager rm) {
-        this.game = gameScreen.getGame();
         this.gameScreen = gameScreen;
+        this.game = gameScreen.getGame();
         this.tileMap = tileMap;
         this.player = player;
         this.rm = rm;
 
         viewport = new StretchViewport(LoreJourney.V_WIDTH, LoreJourney.V_HEIGHT, new OrthographicCamera());
-        stage = new Stage(viewport, gameScreen.getBatch());
+        stage = new Stage(viewport, game.batch);
 
         shapeRenderer = new ShapeRenderer();
     }

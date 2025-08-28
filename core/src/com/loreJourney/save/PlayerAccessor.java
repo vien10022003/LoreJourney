@@ -1,10 +1,8 @@
 package com.loreJourney.save;
 
-import java.util.Arrays;
-
-import com.loreJourney.battle.SpecialMoveset;
 import com.loreJourney.entity.Player;
-import com.loreJourney.inventory.*;
+// REMOVED: Inventory system disabled
+// import com.loreJourney.inventory.*;
 import com.loreJourney.resource.Statistics;
 
 /**
@@ -22,22 +20,15 @@ public class PlayerAccessor  {
     public int exp;
     public int maxExp;
     public int gold;
-    public int minDamage;
-    public int maxDamage;
-    public int accuracy;
-    public int smoveCd;
 
     // level save
     public int maxWorld;
     public int maxLevel;
 
+    // REMOVED: Inventory system disabled
     // inventory and equips consist of ItemAccessors to reduce unnecessary fields
-    public ItemAccessor[] inventory;
-    public ItemAccessor[] equips;
-
-    // smoveset is simply an array of integers representing smove ids
-    // -1 if no smove in slot
-    public int[] smoveset;
+    // public ItemAccessor[] inventory;
+    // public ItemAccessor[] equips;
 
     // statistics
     public Statistics stats;
@@ -46,10 +37,9 @@ public class PlayerAccessor  {
     public Settings settings;
 
     public PlayerAccessor() {
-        inventory = new ItemAccessor[Inventory.NUM_SLOTS];
-        equips = new ItemAccessor[Equipment.NUM_SLOTS];
-        smoveset = new int[SpecialMoveset.MAX_MOVES];
-        Arrays.fill(smoveset, -1);
+        // REMOVED: Inventory system disabled
+        // inventory = new ItemAccessor[Inventory.NUM_SLOTS];
+        // equips = new ItemAccessor[Equipment.NUM_SLOTS];
     }
 
     /**
@@ -64,14 +54,11 @@ public class PlayerAccessor  {
         this.exp = player.getExp();
         this.maxExp = player.getMaxExp();
         this.gold = player.getGold();
-        this.minDamage = player.getMinDamage();
-        this.maxDamage = player.getMaxDamage();
-        this.accuracy = player.getAccuracy();
-        this.smoveCd = player.smoveCd;
         this.maxWorld = player.maxWorld;
         this.maxLevel = player.maxLevel;
 
-        // load inventory and equips
+        // REMOVED: Inventory system disabled
+        /*// load inventory and equips
         for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
             if (!player.inventory.isFreeSlot(i)) {
                 Item item = player.inventory.getItem(i);
@@ -107,13 +94,7 @@ public class PlayerAccessor  {
             else {
                 equips[i] = null;
             }
-        }
-
-        Arrays.fill(smoveset, -1);
-        // load smoveset
-        for (int i = 0; i < player.smoveset.smoveset.size; i++) {
-            smoveset[i] = player.smoveset.getMoveAt(i).id;
-        }
+        }*/
 
         // statistics
         this.stats = player.stats;

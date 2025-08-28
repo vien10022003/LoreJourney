@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.loreJourney.main.LoreJourney;
-import com.loreJourney.map.WeatherType;
 import com.loreJourney.resource.ResourceManager;
 
 /**
@@ -60,9 +59,9 @@ public class SettingsScreen extends MenuExtensionScreen {
             public void clicked(InputEvent event, float x, float y) {
                 if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                 if (inGame) {
-                    game.gameScreen.resetGame = false;
-                    setFadeScreen(game.gameScreen);
-                    game.gameScreen.hud.settingsDialog.show(game.gameScreen.hud.getStage());
+                    // REMOVED: GameScreen no longer exists, redirect to menu
+                    game.menuScreen.transitionIn = 2;
+                    setSlideScreen(game.menuScreen, false);
                 }
                 else {
                     game.menuScreen.transitionIn = 2;
@@ -206,8 +205,7 @@ public class SettingsScreen extends MenuExtensionScreen {
                 if (!game.player.settings.muteSfx) rm.buttonclick2.play(game.player.settings.sfxVolume);
                 game.player.settings.showWeatherAnimations = showWeatherAnims.isChecked();
                 if (inGame) {
-                    if (showWeatherAnims.isChecked()) game.gameScreen.gameMap.setWeather(game.gameScreen.gameMap.tileMap.weather);
-                    else game.gameScreen.gameMap.setWeather(0);
+                    // REMOVED: GameScreen weather functionality no longer available
                 }
                 if (!inGame) game.save.save();
             }

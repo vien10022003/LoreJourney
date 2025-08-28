@@ -4,10 +4,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.loreJourney.main.LoreJourney;
 import com.loreJourney.map.Level;
@@ -51,9 +51,7 @@ public class LevelSelectScreen extends SelectScreen {
 
         playerStats = "Player\n-----------------------------------\n" +
             "LEVEL: " + game.player.getLevel() +
-            "\nHP: " + game.player.getHp() + "/" + game.player.getMaxHp() +
-            "\nDAMAGE: " + game.player.getMinDamage() + "-" + game.player.getMaxDamage() +
-            "\nSPECIAL MOVESET: \n" + game.player.smoveset.toString();
+            "\nHP: " + game.player.getHp() + "/" + game.player.getMaxHp();
 
         // the level the player is currently on and not completed
         if (this.worldIndex == game.player.maxWorld) {
@@ -107,8 +105,11 @@ public class LevelSelectScreen extends SelectScreen {
             public void clicked(InputEvent event, float x, float y) {
                 if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                 if (worldIndex <= game.player.maxWorld) {
-                    // if the player's inventory is full give a warning
-                    if (game.player.inventory.isFull()) {
+                    // Visual feedback - change button color temporarily
+                    enterLabel.getStyle().fontColor = Color.YELLOW;
+                    
+                    // REMOVED: Inventory system disabled - skip inventory check
+                    /*if (game.player.inventory.isFull()) {
                         new Dialog("Warning", rm.dialogSkin) {
                             {
                                 Label l = new Label("Your inventory is full.\nAre you sure you want to proceed?", rm.dialogSkin);
@@ -123,13 +124,24 @@ public class LevelSelectScreen extends SelectScreen {
 
                             @Override
                             protected void result(Object object) {
+                                // Reset button color
+                                enterLabel.getStyle().fontColor = Color.WHITE;
                                 if (object.equals("yes")) enterGame();
                             }
 
                         }.show(stage).getTitleLabel().setAlignment(Align.center);
-                    } else {
+                    } else {*/
                         enterGame();
-                    }
+                    // }
+                } else {
+                    // Level locked - show feedback
+                    enterLabel.getStyle().fontColor = Color.RED;
+                    stage.addAction(Actions.sequence(Actions.delay(0.2f), Actions.run(new Runnable() {
+                        @Override
+                        public void run() {
+                            enterLabel.getStyle().fontColor = Color.WHITE;
+                        }
+                    })));
                 }
             }
         });
@@ -139,10 +151,13 @@ public class LevelSelectScreen extends SelectScreen {
      * Enters the map with the corresponding world, level key
      */
     private void enterGame() {
-        game.gameScreen.init(worldIndex, currentLevelIndex);
-        game.gameScreen.resetGame = true;
+        // Reset button color before entering game
+        enterLabel.getStyle().fontColor = Color.WHITE;
+        
+        // Enter the game with selected world and level
         rm.menuTheme.pause();
         game.player.inMap = true;
+        game.gameScreen.init(worldIndex, currentLevelIndex);
         setFadeScreen(game.gameScreen);
     }
 

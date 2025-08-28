@@ -13,8 +13,9 @@ import com.badlogic.gdx.utils.Align;
 import com.loreJourney.effects.Moving;
 import com.loreJourney.entity.Player;
 import com.loreJourney.event.EventState;
-import com.loreJourney.inventory.Inventory;
-import com.loreJourney.inventory.Item;
+// REMOVED: Inventory system disabled
+// import com.loreJourney.inventory.Inventory;
+// import com.loreJourney.inventory.Item;
 import com.loreJourney.main.LoreJourney;
 import com.loreJourney.map.TileMap;
 import com.loreJourney.map.WeatherType;
@@ -357,14 +358,16 @@ public class Hud extends UI {
     private void loseObtained() {
         player.addGold(-gameScreen.gameMap.goldObtained);
         player.addExp(-gameScreen.gameMap.expObtained);
-        if (gameScreen.gameMap.itemsObtained.size != 0) {
+        
+        // REMOVED: Inventory system disabled
+        /*if (gameScreen.gameMap.itemsObtained.size != 0) {
             for (Item item : gameScreen.gameMap.itemsObtained) {
                 for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
                     if (player.inventory.getItem(i) == item)
                         player.inventory.removeItem(i);
                 }
             }
-        }
+        }*/
     }
 
     /**
@@ -435,14 +438,15 @@ public class Hud extends UI {
      * Handles two option button commands
      */
     private void handleOptionEvents() {
-        // inventoryUI
+        // REMOVED: Inventory button disabled
         optionButtons[0].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                toggle(false);
-                gameScreen.setCurrentEvent(EventState.INVENTORY);
-                gameScreen.getGame().inventoryUI.init(false, null);
-                gameScreen.getGame().inventoryUI.start();
+                // Inventory system disabled - no action
+                // toggle(false);
+                // gameScreen.setCurrentEvent(EventState.INVENTORY);
+                // gameScreen.getGame().inventoryUI.init(false, null);
+                // gameScreen.getGame().inventoryUI.start();
             }
         });
 

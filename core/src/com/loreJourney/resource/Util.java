@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.loreJourney.battle.SpecialMove;
 import com.loreJourney.entity.Entity;
 import com.loreJourney.entity.enemy.Boss;
 import com.loreJourney.entity.enemy.Normal;
@@ -42,69 +41,12 @@ public class Util {
     public static final int DIR_PAD_SIZE = 20;
     public static final int DIR_PAD_OFFSET = 5;
 
-    // Special move indexes
-    public static final int NUM_SPECIAL_MOVES = 8;
-    public static final int DISTRACT = 0;
-    public static final int FOCUS = 1;
-    public static final int INTIMIDATE = 2;
-    public static final int REFLECT = 3;
-    public static final int STUN = 4;
-    public static final int INVERT = 5;
-    public static final int SACRIFICE = 6;
-    public static final int SHIELD = 7;
-
-    public static final SpecialMove S_DISTRACT = new SpecialMove(DISTRACT,
-            "Distract", "Next enemy attack\n-" + Util.P_DISTRACT + "% ACC", 1, null);
-    public static final SpecialMove S_FOCUS = new SpecialMove(FOCUS,
-            "Focus", "Next attack 100% ACC\nand +" + Util.P_FOCUS_CRIT + "% crit chance", 7, null);
-    public static final SpecialMove S_INTIMIDATE = new SpecialMove(INTIMIDATE,
-            "Intimidate", "Next attack is\namplified by " + Util.P_INTIMIDATE + "%", 3, null);
-    public static final SpecialMove S_REFLECT = new SpecialMove(REFLECT,
-            "Reflect", "Next enemy attack\nis reflected back", 23, null);
-    public static final SpecialMove S_STUN = new SpecialMove(STUN,
-            "Stun", Util.P_STUN + "% chance to\nstun enemy", 5, null);
-    public static final SpecialMove S_INVERT = new SpecialMove(INVERT,
-            "Invert", "Heal moves damage\nDamage moves heal", 13, null);
-    public static final SpecialMove S_SACRIFICE = new SpecialMove(SACRIFICE,
-            "Sacrifice", "Sacrifice all but 1 hp\nfor increased dmg", 10, null);
-    public static final SpecialMove S_SHIELD = new SpecialMove(SHIELD,
-            "Shield", "Summon a shield that\nabsorbs " + Util.P_SHIELD + "% max hp", 17, null);
-
-    public static final SpecialMove[] SMOVES_ORDER_BY_LVL = {
-        S_DISTRACT, S_INTIMIDATE, S_STUN, S_FOCUS, S_SACRIFICE, S_INVERT, S_SHIELD, S_REFLECT
-    };
-    public static final SpecialMove[] SMOVES_ORDER_BY_ID = {
-        S_DISTRACT, S_FOCUS, S_INTIMIDATE, S_REFLECT, S_STUN, S_INVERT, S_SACRIFICE, S_SHIELD
-    };
-
-    // Button dimensions
-    public static final int MOVE_WIDTH = 72;
-    public static final int MOVE_HEIGHT = 25;
-
     // Probabilities, Percentages, and Multipliers
-    public static final int RUN_FROM_BATTLE = 7;
-    public static final int SAVED_FROM_BATTLE = 1;
     public static final int ELITE_CHANCE = 5;
-    public static final int PLAYER_ACCURACY = 80;
-    public static final int ENEMY_MIN_ACCURACY = 75;
-    public static final int ENEMY_MAX_ACCURACY = 95;
-    public static final int REVIVAL = 1;
     public static final int ENCHANT = 50;
     public static final int DESTROY_ITEM_IF_FAIL = 50;
     public static final int TILE_INTERATION = 70;
     public static final int DEATH_PENALTY = 1;
-
-    // Battle special moves percentages
-    public static final int P_DISTRACT = 50;
-    public static final int P_INTIMIDATE = 40;
-    public static final float INTIMIDATE_MULT = 1.4f;
-    public static final int P_FOCUS_CRIT = 30;
-    public static final int P_STUN = 60;
-    public static final int P_SHIELD = 20;
-
-    public static final int CRIT_MULTIPLIER = 3;
-    public static final float MIN_ELITE_MULTIPLIER = 1.3f;
-    public static final float MAX_ELITE_MULTIPLIER = 1.6f;
 
     public static final int NORMAL_ITEM_DROP = 30;
     public static final int ELITE_ITEM_DROP = 60;
@@ -125,20 +67,21 @@ public class Util {
 
     // Level up scaling
     public static final int PLAYER_INIT_MAX_HP = 75;
-    public static final int PLAYER_INIT_MIN_DMG = 10;
-    public static final int PLAYER_INIT_MAX_DMG = 16;
     public static final int PLAYER_MIN_HP_INCREASE = 9;
     public static final int PLAYER_MAX_HP_INCREASE = 17;
-    public static final int PLAYER_MIN_DMG_INCREASE = 1;
-    public static final int PLAYER_MAX_DMG_INCREASE = 3;
-
-    public static final int ENEMY_INIT_MIN_MINDMG = 2;
-    public static final int ENEMY_INIT_MAX_MINDMG = 4;
-    public static final int ENEMY_INIT_MIN_MAXDMG = 5;
-    public static final int ENEMY_INIT_MAX_MAXDMG = 7;
-
-    public static final int ENEMY_MIN_DMG_INCREASE = 1;
     public static final int ENEMY_MAX_DMG_INCREASE = 4;
+
+    // Enemy constants
+    public static final float MIN_ELITE_MULTIPLIER = 1.3f;
+    public static final float MAX_ELITE_MULTIPLIER = 1.6f;
+    public static final int ENEMY_INIT_MIN_MINDMG = 8;
+    public static final int ENEMY_INIT_MAX_MINDMG = 15;
+    public static final int ENEMY_INIT_MIN_MAXDMG = 16;
+    public static final int ENEMY_INIT_MAX_MAXDMG = 24;
+    public static final int ENEMY_MIN_DMG_INCREASE = 2;
+    public static final int ENEMY_MAX_DMG_INCREASE_RANGE = 5;
+    public static final int ENEMY_MIN_ACCURACY = 70;
+    public static final int ENEMY_MAX_ACCURACY = 95;
 
     // Experience
 

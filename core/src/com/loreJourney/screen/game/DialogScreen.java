@@ -45,7 +45,6 @@ public class DialogScreen extends UI {
 
     private boolean beginCycle = false;
     private boolean endCycle = false;
-    private EventState prevEvent = EventState.NONE;
     private EventState nextEvent = EventState.NONE;
 
     // creates the blinking triangle effect when text is done animating
@@ -128,7 +127,6 @@ public class DialogScreen extends UI {
         currentText = currentDialog[0];
         anim = currentText.split("");
 
-        prevEvent = prev;
         nextEvent = next;
         beginCycle = true;
     }
@@ -208,6 +206,8 @@ public class DialogScreen extends UI {
                 }
                 gameScreen.setCurrentEvent(EventState.MOVING);
                 gameScreen.hud.toggle(true);
+                break;
+            default:
                 break;
         }
     }

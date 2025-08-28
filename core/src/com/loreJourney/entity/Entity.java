@@ -3,7 +3,6 @@ package com.loreJourney.entity;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.loreJourney.animation.AnimationManager;
-import com.loreJourney.battle.Moveset;
 import com.loreJourney.map.Tile;
 import com.loreJourney.map.TileMap;
 import com.loreJourney.resource.ResourceManager;
@@ -31,8 +30,6 @@ public abstract class Entity {
     protected TileMap tileMap;
 
     /******** RPG ASPECTS *********/
-
-    protected Moveset moveset;
 
     protected boolean dead = false;
 
@@ -213,8 +210,6 @@ public abstract class Entity {
     public Vector2 getPosition() {
         return position;
     }
-
-    public Moveset getMoveset() { return moveset; }
 
     public int getHp() {
         return hp;

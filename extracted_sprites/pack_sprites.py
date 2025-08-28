@@ -168,16 +168,58 @@ def pack_to_original_format():
         output_atlas="../android/assets/textures_new.atlas"
     )
 
+def pack_and_replace_original():
+    """Pack va thay the truc tiep file goc"""
+    import shutil
+    import os
+    
+    print("⚠️  CẢNH BÁO: Thao tác này sẽ thay thế file gốc!")
+    confirm = input("Bạn có chắc chắn muốn tiếp tục? (y/N): ").lower().strip()
+    
+    if confirm != 'y':
+        print("❌ Đã hủy thao tác")
+        return
+    
+    # Tạo backup trước
+    backup_dir = "../texture_backup_auto"
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    original_texture = "../android/assets/textures.png"
+    original_atlas = "../android/assets/textures.atlas"
+    
+    # Backup files gốc
+    if os.path.exists(original_texture):
+        shutil.copy2(original_texture, f"{backup_dir}/textures_backup.png")
+        print(f"💾 Backup: textures.png -> {backup_dir}/")
+    
+    if os.path.exists(original_atlas):
+        shutil.copy2(original_atlas, f"{backup_dir}/textures_backup.atlas")
+        print(f"💾 Backup: textures.atlas -> {backup_dir}/")
+    
+    # Pack sprites mới
+    pack_sprites(
+        sprites_dir="sprites",
+        output_texture=original_texture,
+        output_atlas=original_atlas
+    )
+    
+    print("\n✅ Hoàn thành! Đã thay thế file gốc.")
+    print(f"📁 File backup tại: {backup_dir}/")
+    print("🎮 Hãy test game để đảm bảo mọi thứ hoạt động bình thường!")
+
 if __name__ == "__main__":
     print("=== PACK SPRITES SCRIPT ===")
     print("1. Pack thanh file moi (textures_new.png)")
-    print("2. Pack voi ten file va thu muc tuy chinh")
+    print("2. Pack va thay the truc tiep file goc")
+    print("3. Pack voi ten file va thu muc tuy chinh")
     
-    choice = input("Chon lua chon (1/2): ")
+    choice = input("Chon lua chon (1/2/3): ")
     
     if choice == "1":
         pack_to_original_format()
     elif choice == "2":
+        pack_and_replace_original()
+    elif choice == "3":
         sprites_dir = input("Thu muc chua sprites (mac dinh 'sprites'): ") or "sprites"
         output_texture = input("Ten file texture output (vd: my_atlas.png): ")
         output_atlas = input("Ten file atlas output (vd: my_atlas.atlas): ")

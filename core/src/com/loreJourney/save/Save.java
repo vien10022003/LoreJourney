@@ -2,174 +2,71 @@ package com.loreJourney.save;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonWriter;
-import com.loreJourney.battle.SpecialMoveset;
+import com.badlogic.gdx.math.Vector2;
 import com.loreJourney.entity.Player;
-import com.loreJourney.inventory.Equipment;
-import com.loreJourney.inventory.Inventory;
-import com.loreJourney.inventory.Item;
-import com.loreJourney.inventory.ShopItem;
-import com.loreJourney.resource.ResourceManager;
 
-/**
- * Handles the reading and writing of save data to json files.
- *
- * @author Ming Li
- */
 public class Save {
-
-    // for saving and loading
     private Player player;
-    public PlayerAccessor psave;
-    private Json json;
-    private FileHandle file;
-
-    public Save(Player player, String path) {
+    private String filename;
+    
+    public Save(Player player, String filename) {
         this.player = player;
-        psave = new PlayerAccessor();
-        json = new Json();
-        json.setOutputType(JsonWriter.OutputType.json);
-        json.setUsePrototypes(false);
-        file = Gdx.files.local(path);
+        this.filename = filename;
     }
-
-    /**
-     * Loads the player data into the PlayerAccessor then
-     * writes the player save data to the json file
-     */
+    
     public void save() {
-        // load player data
-        psave.load(player);
-        // write data to save json
-        file.writeString(Base64Coder.encodeString(json.prettyPrint(psave)), false);
+        saveData();
     }
-
-    /**
-     * Reads the player data from the save json file and then
-     * loads the data into the game through the player
-     */
-    public void load(ResourceManager rm) {
-        if (!file.exists()) save();
-        psave = json.fromJson(PlayerAccessor.class, Base64Coder.decodeString(file.readString()));
-
-        // load atomic fields
-        player.setHp(psave.hp);
-        player.setMaxHp(psave.maxHp);
-        player.setLevel(psave.level);
-        player.setExp(psave.exp);
-        player.setMaxExp(psave.maxExp);
-        player.setGold(psave.gold);
-        player.setMinDamage(psave.minDamage);
-        player.setMaxDamage(psave.maxDamage);
-        player.setAccuracy(psave.accuracy);
-        player.smoveCd = psave.smoveCd;
-        player.maxWorld = psave.maxWorld;
-        player.maxLevel = psave.maxLevel;
-
-        // load inventory and equips
-        loadInventory(rm);
-        loadEquips(rm);
-
-        // load smoveset
-        for (int i = 0; i < SpecialMoveset.MAX_MOVES; i++) {
-            if (psave.smoveset[i] != -1) {
-                player.smoveset.addSMove(psave.smoveset[i]);
-            }
-        }
-
-        // load statistics
-        player.stats = psave.stats;
-
-        // load and apply settings
-        player.settings = psave.settings;
-        if (player.settings.muteMusic) rm.setMusicVolume(0f);
-        else rm.setMusicVolume(player.settings.musicVolume);
+    
+    public void load(Object rm) {
+        loadData();
     }
-
-    /**
-     * Helper method for loading and converting ItemAccessors to Items in the inventory
-     */
-    private void loadInventory(ResourceManager rm) {
-        for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
-            ItemAccessor ia = psave.inventory[i];
-            if (ia != null) {
-                // shop items
-                if (ia instanceof ShopItemAccessor) {
-                    ShopItem sitem = null;
-                    if (ia.type == 0)
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0,
-                            ia.hp, ia.exp, ia.sell, ((ShopItemAccessor) ia).price);
-                    else if (ia.type >= 2 && ia.type <= 9) {
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.type, ia.rarity, ia.imgIndex, 0,
-                            ia.mhp, ia.dmg, ia.acc, ia.sell, ((ShopItemAccessor) ia).price);
-                        sitem.enchantCost = ia.enchantCost;
-                    }
-                    else if (ia.type == 10)
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0,
-                            ia.eChance, ia.sell, ((ShopItemAccessor) ia).price);
-                    player.inventory.addItemAtIndex(sitem, ia.index);
-                }
-                else {
-                    Item item = null;
-                    if (ia.type == 0)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.hp, ia.exp, ia.sell);
-                    else if (ia.type == 1)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0, ia.sell);
-                    else if (ia.type >= 2 && ia.type <= 9) {
-                        item = new Item(rm, ia.name, ia.desc, ia.type, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.mhp, ia.dmg, ia.acc, ia.sell);
-                        item.enchantCost = ia.enchantCost;
-                    }
-                    else if (ia.type == 10)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.eChance, ia.sell);
-                    player.inventory.addItemAtIndex(item, ia.index);
-                }
-            }
+    
+    public void saveData() {
+        try {
+            Json json = new Json();
+            PlayerData data = new PlayerData();
+            data.x = player.getPosition().x;
+            data.y = player.getPosition().y;
+            data.level = player.getLevel();
+            data.exp = player.getExp();
+            data.hp = player.getHp();
+            data.maxHp = player.getMaxHp();
+            data.gold = player.getGold();
+            data.maxWorld = player.maxWorld;
+            data.maxLevel = player.maxLevel;
+            
+            FileHandle file = Gdx.files.local(filename);
+            file.writeString(json.toJson(data), false);
+        } catch (Exception e) {
+            System.err.println("Error saving data: " + e.getMessage());
         }
     }
-
-    /**
-     * Helper method for loading and converting ItemAccessors to Items in the inventory
-     */
-    private void loadEquips(ResourceManager rm) {
-        for (int i = 0; i < Equipment.NUM_SLOTS; i++) {
-            ItemAccessor ia = psave.equips[i];
-            if (ia != null) {
-                // shop items
-                if (ia instanceof ShopItemAccessor) {
-                    ShopItem sitem = null;
-                    if (ia.type == 0)
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0,
-                            ia.hp, ia.exp, ia.sell, ((ShopItemAccessor) ia).price);
-                    else if (ia.type >= 2 && ia.type <= 9)
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.type, ia.rarity, ia.imgIndex, 0,
-                            ia.mhp, ia.dmg, ia.acc, ia.sell, ((ShopItemAccessor) ia).price);
-                    else if (ia.type == 10)
-                        sitem = new ShopItem(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0,
-                            ia.eChance, ia.sell, ((ShopItemAccessor) ia).price);
-                    player.equips.addEquip(sitem);
-                }
-                else {
-                    Item item = null;
-                    if (ia.type == 0)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.hp, ia.exp, ia.sell);
-                    else if (ia.type == 1)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0, ia.sell);
-                    else if (ia.type >= 2 && ia.type <= 9)
-                        item = new Item(rm, ia.name, ia.desc, ia.type, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.mhp, ia.dmg, ia.acc, ia.sell);
-                    else if (ia.type == 10)
-                        item = new Item(rm, ia.name, ia.desc, ia.rarity, ia.imgIndex, 0, 0,
-                            ia.eChance, ia.sell);
-                    player.equips.addEquip(item);
-                }
+    
+    public void loadData() {
+        try {
+            FileHandle file = Gdx.files.local(filename);
+            if (file.exists()) {
+                Json json = new Json();
+                PlayerData data = json.fromJson(PlayerData.class, file.readString());
+                
+                player.setPosition(new Vector2(data.x, data.y));
+                player.setLevel(data.level);
+                player.setExp(data.exp);
+                player.setHp(data.hp);
+                player.setMaxHp(data.maxHp);
+                player.setGold(data.gold);
+                player.maxWorld = data.maxWorld;
+                player.maxLevel = data.maxLevel;
             }
+        } catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
         }
     }
-
+    
+    public static class PlayerData {
+        public float x, y;
+        public int level, exp, hp, maxHp, gold, maxWorld, maxLevel;
+    }
 }
