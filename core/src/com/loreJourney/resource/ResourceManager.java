@@ -40,21 +40,12 @@ public class ResourceManager {
     public TextureRegion[][] sprites16x16;
     public TextureRegion[][] tiles16x16;
     public TextureRegion[][] atiles16x16;
-    public TextureRegion[][] items20x20;
-    public TextureRegion[][] shopitems;
     public TextureRegion[][] battleSprites96x96;
-    public TextureRegion[][] battleBackgrounds400x240;
-    public TextureRegion[][] battleAttacks64x64;
-    public TextureRegion[][] battleHeal96x96;
-    public TextureRegion[][] levelUp96x96;
     public TextureRegion raindrop;
     public TextureRegion[][] raindropAnim16x16;
     public TextureRegion snowflake;
-    public TextureRegion bigsnow;
-    public TextureRegion bigrain;
     public TextureRegion lightning;
     public TextureRegion shade;
-    public TextureRegion[] smoveicons;
 
     // Menu
     public TextureRegion[] title;
@@ -67,28 +58,15 @@ public class ResourceManager {
 
     // Lighting
     public TextureRegion darkness;
-    public TextureRegion battledarkness;
 
     // UI
     public TextureRegion[][] dirpad20x20;
-    public TextureRegion[][] movebutton145x50;
-    public TextureRegion[][] stdmedbutton110x50;
     public TextureRegion[][] optionbutton32x32;
     public TextureRegion[][] exitbutton18x18;
     public TextureRegion[][] invbuttons92x28;
-    public TextureRegion[] statuseffects20x20;
     public TextureRegion dialogBox400x80;
-    public TextureRegion playerhpbar145x40;
-    public TextureRegion enemyhpbar145x40;
-    public TextureRegion levelupscreen400x240;
-    public TextureRegion inventoryui372x212;
-    public TextureRegion selectedslot28x28;
     public TextureRegion[] creditsicons;
-    public TextureRegion shopui;
-    public TextureRegion[][] shoptab;
-    public TextureRegion[] smoveSlots;
     public TextureRegion[][] smoveButtons;
-    public TextureRegion smoveFrame;
 
     // Skin
     public Skin skin;
@@ -112,35 +90,15 @@ public class ResourceManager {
     public Sound invselectclick;
     public Sound moveselectclick;
     public Sound textprogression;
-    public Sound hit;
-    public Sound blueattack;
-    public Sound redattack;
-    public Sound yellowattack;
-    public Sound heal;
-    public Sound death;
     public Sound thunder;
     public Sound lightrain;
     public Sound heavyrain;
     public Sound teleport;
     public Sound movement;
     public Sound finish;
-    public Sound battlestart;
 
     // Worlds
     public Array<World> worlds = new Array<World>();
-
-    // REMOVED: Move system arrays - no longer needed
-    // public final Array<Move> accurateMoves = new Array<Move>();
-    // public final Array<Move> wideMoves = new Array<Move>();
-    // public final Array<Move> critMoves = new Array<Move>();
-    // public final Array<Move> healMoves = new Array<Move>();
-    // public final Array<Array<Move>> bossMoves = new Array<Array<Move>>();
-
-    // REMOVED: Inventory system disabled - items and shop items removed
-    // contains all the items separated by rarity
-    // public final Array<Array<Item>> items = new Array<Array<Item>>();
-    // contains all the shop items separated by rarity
-    // public final Array<Array<ShopItem>> shopItems = new Array<Array<ShopItem>>();
 
     // Fonts
     public final BitmapFont pixel10;
@@ -165,19 +123,12 @@ public class ResourceManager {
         assetManager.load("sfx/inventory_select_click.ogg", Sound.class);
         assetManager.load("sfx/move_select_click.ogg", Sound.class);
         assetManager.load("sfx/text_progression.wav", Sound.class);
-        assetManager.load("sfx/hit.ogg", Sound.class);
-        assetManager.load("sfx/blue_attack.ogg", Sound.class);
-        assetManager.load("sfx/red_attack.ogg", Sound.class);
-        assetManager.load("sfx/yellow_attack.ogg", Sound.class);
-        assetManager.load("sfx/heal.ogg", Sound.class);
-        assetManager.load("sfx/death.ogg", Sound.class);
         assetManager.load("sfx/thunder.ogg", Sound.class);
         assetManager.load("sfx/light_rain.ogg", Sound.class);
         assetManager.load("sfx/heavy_rain.ogg", Sound.class);
         assetManager.load("sfx/teleport.ogg", Sound.class);
         assetManager.load("sfx/movement.ogg", Sound.class);
         assetManager.load("sfx/finish.ogg", Sound.class);
-        assetManager.load("sfx/battle_start.ogg", Sound.class);
 
         assetManager.finishLoading();
 
@@ -198,24 +149,14 @@ public class ResourceManager {
         sprites16x16 = atlas.findRegion("16x16_sprites").split(16, 16);
         tiles16x16 = atlas.findRegion("16x16_tiles").split(16, 16);
         atiles16x16 = atlas.findRegion("16x16_atiles").split(16, 16);
-        items20x20 = atlas.findRegion("20x20_items").split(10, 10);
-        shopitems = atlas.findRegion("shop_items").split(10, 10);
         battleSprites96x96 = atlas.findRegion("96x96_battle_sprites").split(48, 48);
-        battleBackgrounds400x240 = atlas.findRegion("battle_bgs").split(200, 120);
         shadow11x6 = atlas.findRegion("11x6_shadow");
         redarrow10x9 = atlas.findRegion("10x9_redarrow");
-        battleAttacks64x64 = atlas.findRegion("64x64_battle_attacks").split(32, 32);
-        battleHeal96x96 = atlas.findRegion("96x96_battle_heal").split(48, 48);
-        levelUp96x96 = atlas.findRegion("96x96_level_up").split(48, 48);
-        levelupscreen400x240 = atlas.findRegion("level_up");
         raindrop = atlas.findRegion("raindrop");
         raindropAnim16x16 = atlas.findRegion("raindrop_anim").split(16, 16);
         snowflake = atlas.findRegion("snowflake");
         lightning = atlas.findRegion("lightning");
         shade = atlas.findRegion("shade");
-        bigrain = atlas.findRegion("big_rain");
-        bigsnow = atlas.findRegion("big_snow");
-        smoveicons = atlas.findRegion("smove_icons").split(14, 14)[0];
 
         // menu
         title = atlas.findRegion("loreJourney_title").split(18, 24)[0];
@@ -228,28 +169,16 @@ public class ResourceManager {
 
         // light
         darkness = atlas.findRegion("darkness");
-        battledarkness = atlas.findRegion("battle_darkness");
 
         // ui
         dirpad20x20 = atlas.findRegion("dir_pad").split(20, 20);
-        movebutton145x50 = atlas.findRegion("move_buttons").split(72, 25);
-        stdmedbutton110x50 = atlas.findRegion("standard_med_button").split(55, 25);
         dialogBox400x80 = atlas.findRegion("dialog_box");
-        playerhpbar145x40 = atlas.findRegion("player_hp_bar");
-        enemyhpbar145x40 = atlas.findRegion("enemy_hp_bar");
         optionbutton32x32 = atlas.findRegion("option_buttons").split(16, 16);
-        inventoryui372x212 = atlas.findRegion("inv_ui");
         exitbutton18x18 = atlas.findRegion("exit_button").split(9, 9);
-        selectedslot28x28 = atlas.findRegion("selected_slot");
         invbuttons92x28 = atlas.findRegion("inv_buttons").split(46, 14);
-        statuseffects20x20 = atlas.findRegion("20x20status_effects").split(10, 10)[0];
         creditsicons = atlas.findRegion("creditsicons").split(17, 17)[0];
-        shopui = atlas.findRegion("shop_ui");
-        shoptab = atlas.findRegion("shop_tab").split(31, 9);
-        smoveSlots = atlas.findRegion("smove_slot").split(16, 16)[0];
         smoveButtons = atlas.findRegion("smove_buttons").split(38, 18);
-        smoveFrame = atlas.findRegion("smove_frame");
-
+        
         // fix font spacing
         pixel10.setUseIntegerPositions(false);
 
@@ -267,19 +196,12 @@ public class ResourceManager {
         invselectclick = assetManager.get("sfx/inventory_select_click.ogg", Sound.class);
         moveselectclick = assetManager.get("sfx/move_select_click.ogg", Sound.class);
         textprogression = assetManager.get("sfx/text_progression.wav", Sound.class);
-        hit = assetManager.get("sfx/hit.ogg", Sound.class);
-        blueattack = assetManager.get("sfx/blue_attack.ogg", Sound.class);
-        redattack = assetManager.get("sfx/red_attack.ogg", Sound.class);
-        yellowattack = assetManager.get("sfx/yellow_attack.ogg", Sound.class);
-        heal = assetManager.get("sfx/heal.ogg", Sound.class);
-        death = assetManager.get("sfx/death.ogg", Sound.class);
         thunder = assetManager.get("sfx/thunder.ogg", Sound.class);
         lightrain = assetManager.get("sfx/light_rain.ogg", Sound.class);
         heavyrain = assetManager.get("sfx/heavy_rain.ogg", Sound.class);
         teleport = assetManager.get("sfx/teleport.ogg", Sound.class);
         movement = assetManager.get("sfx/movement.ogg", Sound.class);
         finish = assetManager.get("sfx/finish.ogg", Sound.class);
-        battlestart = assetManager.get("sfx/battle_start.ogg", Sound.class);
 
         loadWorlds();
         // loadMoves(); // REMOVED: No longer loading moves system
@@ -341,6 +263,8 @@ public class ResourceManager {
         menuTheme.setVolume(volume);
         slimeForestTheme.setVolume(volume);
         spookyGraveyardTheme.setVolume(volume);
+        frostyCaveTheme.setVolume(volume);
+        battleTheme.setVolume(volume);
     }
 
     public void dispose() {
@@ -362,19 +286,12 @@ public class ResourceManager {
         invselectclick.dispose();
         moveselectclick.dispose();
         textprogression.dispose();
-        hit.dispose();
-        blueattack.dispose();
-        redattack.dispose();
-        yellowattack.dispose();
-        heal.dispose();
-        death.dispose();
         thunder.dispose();
         lightrain.dispose();
         heavyrain.dispose();
         teleport.dispose();
         movement.dispose();
         finish.dispose();
-        battlestart.dispose();
     }
 
 }

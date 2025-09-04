@@ -24,8 +24,6 @@ public class Statistics {
     public int numEnchants;
     // number of deaths
     public int numDeaths;
-    // num of shop items bought
-    public int numShopItemsBought;
 
     // Map statistics
 
@@ -157,7 +155,6 @@ public class Statistics {
             "" + hpHealed,
             "" + numDeaths,
             "" + numEnchants,
-            "" + numShopItemsBought,
             "",
             "" + numSteps,
             "" + numDungeonsWon,
