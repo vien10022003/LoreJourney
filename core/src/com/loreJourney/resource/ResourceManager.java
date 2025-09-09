@@ -61,6 +61,7 @@ public class ResourceManager {
 
     // UI
     public TextureRegion[][] dirpad20x20;
+    public TextureRegion[][] pushButton40x40;
     public TextureRegion[][] optionbutton32x32;
     public TextureRegion[][] exitbutton18x18;
     public TextureRegion[][] invbuttons92x28;
@@ -172,6 +173,7 @@ public class ResourceManager {
 
         // ui
         dirpad20x20 = atlas.findRegion("dir_pad").split(20, 20);
+        pushButton40x40 = atlas.findRegion("push").split(40, 40);
         dialogBox400x80 = atlas.findRegion("dialog_box");
         optionbutton32x32 = atlas.findRegion("option_buttons").split(16, 16);
         exitbutton18x18 = atlas.findRegion("exit_button").split(9, 9);

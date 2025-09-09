@@ -41,6 +41,10 @@ public class Util {
     public static final int DIR_PAD_SIZE = 20;
     public static final int DIR_PAD_OFFSET = 5;
 
+    // Push button constants
+    public static final int PUSH_BUTTON_SIZE = 40;
+    public static final int PUSH_BUTTON_OFFSET = 5;
+
     // Probabilities, Percentages, and Multipliers
     public static final int ELITE_CHANCE = 5;
     public static final int ENCHANT = 50;
