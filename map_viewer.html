@@ -198,6 +198,9 @@
         
         <div class="legend">
             <h4>🎯 Special Tiles Legend</h4>
+            <div style="background: #f39c12; padding: 8px; border-radius: 3px; margin-bottom: 10px; font-size: 11px;">
+                <strong>✅ UPDATED:</strong> Tile IDs đã được chỉnh sửa để hiển thị đúng blocked/ice tiles theo map file format (1-indexed)
+            </div>
             <div class="legend-item">
                 <span class="legend-color" style="background: #e74c3c;"></span>
                 Blocked (Walls)
@@ -235,41 +238,99 @@
         let currentZoom = 2;
         const tileSize = 16;
         
-        // Thông tin từ textures.atlas - vị trí chính xác của 16x16_tiles
-        const tilesAtlasInfo = {
-            x: 380,      // vị trí X trong atlas
-            y: 320,      // vị trí Y trong atlas  
-            width: 256,  // chiều rộng total
-            height: 272, // chiều cao total
+        // Thông tin từ textures.atlas (sẽ được load động)
+        let tilesAtlasInfo = {
+            x: 0,
+            y: 0,
+            width: 256,
+            height: 272,
             tileSize: 16,
-            tilesPerRow: 16, // 256/16 = 16 tiles per row
-            tilesPerCol: 17  // 272/16 = 17 tiles per column
+            tilesPerRow: 16,
+            tilesPerCol: 17
         };
         
         // Tile mapping cho textures 16x16
+        // LƯU Ý: Đây là tile IDs từ MAP FILE (đã +1 so với game logic)
+        // Map file sử dụng 1-indexed, game logic sử dụng 0-indexed
         const blockedTileIds = [
-            4, 5, 17, 19, 20, 21, 33, 34, 35, 36, 37, 65, 66, 67, 68, 81, 82, 83, 84, 
-            100, 101, 102, 115, 116, 117, 118, 131, 132, 133, 134, 135, 136, 137, 138, 
-            139, 144, 145, 146, 147, 156, 157, 165, 166, 151, 152, 167, 168, 169, 170, 
-            184, 185, 186, 197, 198, 199, 200, 201, 202, 215, 216, 217, 218, 227, 228, 
-            229, 230, 231, 232, 233, 234, 235, 243, 244, 247, 249, 263, 264, 265, 266, 
-            267, 268, 269
+            // Converted từ game logic IDs sang map file IDs (cộng thêm 1)
+            6, 7, 8, 10, 11, 12, 13, 14, 15, 16,
+            26, 27, 28, 29, 30, 31, 32, 37, 39, 42,
+            43, 49, 50, 51, 52, 55, 56, 65, 66, 67,
+            68, 71, 85, 86, 87, 88, 89, 92, 93, 97,
+            98, 99, 100, 101, 102, 103, 104, 105, 106, 107,
+            108, 113, 114, 115, 116, 117, 118, 119, 121, 122,
+            124, 129, 130, 131, 132, 133, 134, 135, 136, 137,
+            138, 139, 140, 145, 146, 147, 148, 152, 153, 157,
+            158, 166, 167, 168, 169, 170, 171, 185, 186, 187,
+            198, 199, 200, 201, 202, 203, 216, 217, 218, 219,
+            228, 229, 230, 231, 232, 233, 234, 235, 236, 244,
+            245, 248, 250, 264, 265, 266, 267, 268, 269, 270
         ];
         
-        const iceTileIds = [171, 172, 173, 187, 188, 189, 203, 204, 205, 220, 221, 236, 237];
+        // Ice tiles từ game logic: 171-173, 187-189, 203-205, 220, 221, 236, 237
+        // Converted sang map file IDs (cộng thêm 1)
+        const iceTileIds = [172, 173, 174, 188, 189, 190, 204, 205, 206, 221, 222, 237, 238];
         
-        // Special animated tile IDs
+        // Special animated tile IDs (từ game logic, không cần +1 vì đây là animated tiles)
+        // Animated tiles có format: a{index}|frames|fps trong map file
+        // Game logic: 96+index, nhưng trong map viewer ta check theo animated index
         const specialTiles = {
-            106: { name: 'Question Mark', color: '#f39c12' },
-            107: { name: 'Teleport', color: '#9b59b6' },
-            108: { name: 'Exclamation', color: '#e67e22' },
-            110: { name: 'End', color: '#27ae60' }
+            106: { name: 'Question Mark', color: '#f39c12' },   // a10|4|8 -> 96+10=106
+            107: { name: 'Teleport', color: '#9b59b6' },        // a11|4|8 -> 96+11=107
+            108: { name: 'Exclamation', color: '#e67e22' },     // a12|4|8 -> 96+12=108
+            110: { name: 'End', color: '#27ae60' }              // a14|4|8 -> 96+14=110
         };
 
         // Tự động load texture khi trang được load
         window.addEventListener('load', function() {
-            loadTextureFromAssets();
+            loadAtlasInfo();
         });
+
+        function loadAtlasInfo() {
+            // Load atlas file to get correct positions
+            fetch('android/assets/textures.atlas')
+                .then(response => response.text())
+                .then(atlasContent => {
+                    parseAtlasInfo(atlasContent);
+                    loadTextureFromAssets();
+                })
+                .catch(error => {
+                    console.error('Could not load atlas file:', error);
+                    showMessage('❌ Không thể load file atlas, sử dụng thông tin mặc định', 'error');
+                    // Use default values and continue
+                    loadTextureFromAssets();
+                });
+        }
+        
+        function parseAtlasInfo(atlasContent) {
+            const lines = atlasContent.split('\n');
+            let foundTiles = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === '16x16_tiles') {
+                    foundTiles = true;
+                    continue;
+                }
+                
+                if (foundTiles && line.startsWith('xy:')) {
+                    const coords = line.replace('xy:', '').trim().split(',');
+                    tilesAtlasInfo.x = parseInt(coords[0].trim());
+                    tilesAtlasInfo.y = parseInt(coords[1].trim());
+                } else if (foundTiles && line.startsWith('size:')) {
+                    const size = line.replace('size:', '').trim().split(',');
+                    tilesAtlasInfo.width = parseInt(size[0].trim());
+                    tilesAtlasInfo.height = parseInt(size[1].trim());
+                    tilesAtlasInfo.tilesPerRow = Math.floor(tilesAtlasInfo.width / tilesAtlasInfo.tileSize);
+                    tilesAtlasInfo.tilesPerCol = Math.floor(tilesAtlasInfo.height / tilesAtlasInfo.tileSize);
+                    showMessage(`✅ Atlas info loaded: 16x16_tiles at (${tilesAtlasInfo.x}, ${tilesAtlasInfo.y})`);
+                    break; // We have all info we need
+                }
+            }
+            
+            console.log('Loaded atlas info:', tilesAtlasInfo);
+        }
 
         document.getElementById('mapFile').addEventListener('change', loadMap);
         

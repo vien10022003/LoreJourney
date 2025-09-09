@@ -7,6 +7,67 @@ import os
 import glob
 import math
 import json
+import re
+
+def parse_original_atlas(atlas_path):
+    """Đọc file atlas gốc và trích xuất metadata của các sprite"""
+    sprite_metadata = {}
+    
+    if not os.path.exists(atlas_path):
+        print(f"CẢNH BÁO: Không tìm thấy file atlas gốc: {atlas_path}")
+        return sprite_metadata
+    
+    print(f"Đang đọc metadata từ atlas gốc: {atlas_path}")
+    
+    try:
+        with open(atlas_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        
+        current_sprite = None
+        
+        for line in lines:
+            original_line = line  # Giữ nguyên dòng gốc
+            line = line.strip()   # Strip để xử lý
+            
+            # Bỏ qua dòng trống và header
+            if not line or line.startswith('size:') or line.startswith('format:') or \
+               line.startswith('filter:') or line.startswith('repeat:') or line.endswith('.png'):
+                continue
+            
+            # Nếu dòng không bắt đầu bằng space/tab VÀ không chứa dấu ":", đây là tên sprite
+            if not original_line.startswith(' ') and not original_line.startswith('\t') and ':' not in line:
+                current_sprite = line
+                sprite_metadata[current_sprite] = {}
+            
+            # Đọc các thuộc tính của sprite (bắt đầu bằng space/tab)
+            elif current_sprite and (original_line.startswith(' ') or original_line.startswith('\t')):
+                if line.startswith('split:'):
+                    # Trích xuất split values: "split: 5, 5, 5, 4"
+                    split_match = re.search(r'split:\s*([0-9, ]+)', line)
+                    if split_match:
+                        split_values = [int(x.strip()) for x in split_match.group(1).split(',')]
+                        sprite_metadata[current_sprite]['split'] = split_values
+                
+                elif line.startswith('pad:'):
+                    # Trích xuất pad values: "pad: 4, 4, 1, 1"
+                    pad_match = re.search(r'pad:\s*([0-9, ]+)', line)
+                    if pad_match:
+                        pad_values = [int(x.strip()) for x in pad_match.group(1).split(',')]
+                        sprite_metadata[current_sprite]['pad'] = pad_values
+        
+        # Thống kê
+        sprites_with_split = len([s for s in sprite_metadata.values() if 'split' in s])
+        sprites_with_pad = len([s for s in sprite_metadata.values() if 'pad' in s])
+        
+        print(f"Đã đọc metadata của {len(sprite_metadata)} sprites:")
+        print(f"  - {sprites_with_split} sprites có thuộc tính 'split'")
+        print(f"  - {sprites_with_pad} sprites có thuộc tính 'pad'")
+        
+        return sprite_metadata
+        
+    except Exception as e:
+        print(f"LỖI khi đọc file atlas: {e}")
+        return {}
 
 def calculate_atlas_size(sprites_info):
     """Tinh kich thuoc atlas toi uu"""
@@ -63,8 +124,8 @@ def pack_sprites_simple(sprites_info, atlas_size):
     
     return positions
 
-def create_atlas_file(positions, atlas_path, texture_filename, atlas_size):
-    """Tao file .atlas"""
+def create_atlas_file(positions, atlas_path, texture_filename, atlas_size, sprite_metadata=None):
+    """Tao file .atlas với metadata từ atlas gốc"""
     with open(atlas_path, 'w', encoding='utf-8') as f:
         # Header
         f.write(f"\n{texture_filename}\n")
@@ -79,15 +140,31 @@ def create_atlas_file(positions, atlas_path, texture_filename, atlas_size):
             f.write("  rotate: false\n")
             f.write(f"  xy: {pos['x']}, {pos['y']}\n")
             f.write(f"  size: {pos['width']}, {pos['height']}\n")
+            
+            # Thêm split nếu có trong metadata
+            if sprite_metadata and sprite_name in sprite_metadata:
+                metadata = sprite_metadata[sprite_name]
+                if 'split' in metadata:
+                    split_values = ', '.join(map(str, metadata['split']))
+                    f.write(f"  split: {split_values}\n")
+                if 'pad' in metadata:
+                    pad_values = ', '.join(map(str, metadata['pad']))
+                    f.write(f"  pad: {pad_values}\n")
+            
             f.write(f"  orig: {pos['width']}, {pos['height']}\n")
             f.write("  offset: 0, 0\n")
             f.write("  index: -1\n")
 
-def pack_sprites(sprites_dir, output_texture, output_atlas):
-    """Gop cac sprite thanh texture atlas"""
+def pack_sprites(sprites_dir, output_texture, output_atlas, original_atlas_path=None):
+    """Gop cac sprite thanh texture atlas với metadata từ atlas gốc"""
     print(f"Bat dau pack sprites tu thu muc: {sprites_dir}")
     print(f"Output texture: {output_texture}")
     print(f"Output atlas: {output_atlas}")
+    
+    # Đọc metadata từ atlas gốc nếu có
+    sprite_metadata = {}
+    if original_atlas_path:
+        sprite_metadata = parse_original_atlas(original_atlas_path)
     
     # Tim tat ca file PNG
     png_files = glob.glob(os.path.join(sprites_dir, "*.png"))
@@ -113,7 +190,16 @@ def pack_sprites(sprites_dir, output_texture, output_atlas):
             }
             sprites_images[sprite_name] = img
             
-            print(f"Loaded: {sprite_name} ({img.width}x{img.height})")
+            # Hiển thị thông tin metadata nếu có
+            metadata_info = ""
+            if sprite_name in sprite_metadata:
+                meta = sprite_metadata[sprite_name]
+                if 'split' in meta:
+                    metadata_info += f" [split: {meta['split']}]"
+                if 'pad' in meta:
+                    metadata_info += f" [pad: {meta['pad']}]"
+            
+            print(f"Loaded: {sprite_name} ({img.width}x{img.height}){metadata_info}")
             
         except Exception as e:
             print(f"Loi khi load {png_file}: {e}")
@@ -149,10 +235,21 @@ def pack_sprites(sprites_dir, output_texture, output_atlas):
     atlas_image.save(output_texture)
     print(f"Da luu texture: {output_texture}")
     
-    # Tao file atlas
+    # Tao file atlas với metadata
     texture_filename = os.path.basename(output_texture)
-    create_atlas_file(positions, output_atlas, texture_filename, atlas_size)
+    create_atlas_file(positions, output_atlas, texture_filename, atlas_size, sprite_metadata)
     print(f"Da luu atlas file: {output_atlas}")
+    
+    # Thống kê metadata được giữ lại
+    preserved_metadata = 0
+    for sprite_name in positions.keys():
+        if sprite_name in sprite_metadata and ('split' in sprite_metadata[sprite_name] or 'pad' in sprite_metadata[sprite_name]):
+            preserved_metadata += 1
+    
+    if preserved_metadata > 0:
+        print(f"✅ Đã giữ lại metadata cho {preserved_metadata} sprites")
+    else:
+        print("⚠️  Không có metadata nào được giữ lại")
     
     # Dong cac hinh anh
     for img in sprites_images.values():
@@ -165,7 +262,8 @@ def pack_to_original_format():
     pack_sprites(
         sprites_dir="sprites",
         output_texture="../android/assets/textures_new.png",
-        output_atlas="../android/assets/textures_new.atlas"
+        output_atlas="../android/assets/textures_new.atlas",
+        original_atlas_path="textures.atlas"  # Đọc metadata từ atlas gốc
     )
 
 def pack_and_replace_original():
@@ -173,38 +271,39 @@ def pack_and_replace_original():
     import shutil
     import os
     
-    print("⚠️  CẢNH BÁO: Thao tác này sẽ thay thế file gốc!")
-    confirm = input("Bạn có chắc chắn muốn tiếp tục? (y/N): ").lower().strip()
-    
-    if confirm != 'y':
-        print("❌ Đã hủy thao tác")
-        return
-    
-    # Tạo backup trước
-    backup_dir = "../texture_backup_auto"
-    os.makedirs(backup_dir, exist_ok=True)
+    # Hỏi có muốn backup hay không
+    backup_choice = input("Bạn có muốn backup files gốc trước khi thay thế? (Y/n): ").lower().strip()
+    should_backup = backup_choice != 'n'
     
     original_texture = "../android/assets/textures.png"
     original_atlas = "../android/assets/textures.atlas"
     
-    # Backup files gốc
-    if os.path.exists(original_texture):
-        shutil.copy2(original_texture, f"{backup_dir}/textures_backup.png")
-        print(f"💾 Backup: textures.png -> {backup_dir}/")
+    # Backup files gốc nếu người dùng muốn
+    if should_backup:
+        backup_dir = "../texture_backup_auto"
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        if os.path.exists(original_texture):
+            shutil.copy2(original_texture, f"{backup_dir}/textures_backup.png")
+            print(f"💾 Backup: textures.png -> {backup_dir}/")
+        
+        if os.path.exists(original_atlas):
+            shutil.copy2(original_atlas, f"{backup_dir}/textures_backup.atlas")
+            print(f"💾 Backup: textures.atlas -> {backup_dir}/")
+    else:
+        print("⚠️  Bỏ qua backup - file gốc sẽ bị ghi đè trực tiếp")
     
-    if os.path.exists(original_atlas):
-        shutil.copy2(original_atlas, f"{backup_dir}/textures_backup.atlas")
-        print(f"💾 Backup: textures.atlas -> {backup_dir}/")
-    
-    # Pack sprites mới
+    # Pack sprites mới với metadata từ atlas gốc
     pack_sprites(
         sprites_dir="sprites",
         output_texture=original_texture,
-        output_atlas=original_atlas
+        output_atlas=original_atlas,
+        original_atlas_path="textures.atlas"  # Đọc metadata từ atlas gốc
     )
     
     print("\n✅ Hoàn thành! Đã thay thế file gốc.")
-    print(f"📁 File backup tại: {backup_dir}/")
+    if should_backup:
+        print(f"📁 File backup tại: {backup_dir}/")
     print("🎮 Hãy test game để đảm bảo mọi thứ hoạt động bình thường!")
 
 if __name__ == "__main__":
@@ -224,8 +323,12 @@ if __name__ == "__main__":
         output_texture = input("Ten file texture output (vd: my_atlas.png): ")
         output_atlas = input("Ten file atlas output (vd: my_atlas.atlas): ")
         
+        # Hỏi có muốn sử dụng metadata từ atlas gốc không
+        use_metadata = input("Su dung metadata tu atlas goc? (Y/n): ").lower().strip()
+        original_atlas_path = "textures.atlas" if use_metadata != 'n' else None
+        
         if output_texture and output_atlas:
-            pack_sprites(sprites_dir, output_texture, output_atlas)
+            pack_sprites(sprites_dir, output_texture, output_atlas, original_atlas_path)
         else:
             print("Can nhap du ten file texture va atlas")
     else:

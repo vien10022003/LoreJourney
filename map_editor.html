@@ -279,6 +279,10 @@
             <div class="section">
                 <h3>Tile Palette</h3>
                 <p>Selected Tile ID: <span id="selectedTileId">1</span></p>
+                <div class="info" style="background: #f39c12; font-size: 12px; margin-bottom: 10px;">
+                    <strong>⚠️ LƯU Ý:</strong> Tile ID trong map file = Game Logic ID + 1<br>
+                    Ví dụ: Tile 249 trong map = ID 248 trong game
+                </div>
                 <div class="tile-palette">
                     <canvas id="tilePalette" class="tile-grid"></canvas>
                 </div>
@@ -332,6 +336,13 @@
             
             <div class="export-area">
                 <h3>Export Map</h3>
+                <div class="info" style="background: #e67e22; font-size: 12px; margin-bottom: 15px;">
+                    <strong>📝 QUAN TRỌNG:</strong><br>
+                    • Map file sử dụng 1-indexed (bắt đầu từ 1)<br>
+                    • Game engine tự động trừ đi 1 khi load<br>
+                    • Blocked tiles: 249,264,265,266,269,232,233,234,235,216,55... trong map file<br>
+                    • Tương ứng với: 248,263,264,265,268,231,232,233,234,215,54... trong game logic
+                </div>
                 <button onclick="exportMap()">Generate Map Data</button>
                 <button onclick="copyToClipboard()">Copy to Clipboard</button>
                 <button onclick="downloadMap()">Download as .txt</button>
@@ -363,10 +374,10 @@
         const tileSize = 16;
         const canvasTileSize = 32;
         
-        // Thông tin từ textures.atlas
-        const tilesAtlasInfo = {
-            x: 380,
-            y: 320,
+        // Thông tin từ textures.atlas (sẽ được load động)
+        let tilesAtlasInfo = {
+            x: 0,
+            y: 0,
             width: 256,
             height: 272,
             tileSize: 16,
@@ -376,10 +387,55 @@
         
         // Initialize
         window.addEventListener('load', function() {
-            loadDefaultTexture();
-            createNewMap();
-            setupEventListeners();
+            loadAtlasInfo();
         });
+        
+        function loadAtlasInfo() {
+            // Load atlas file to get correct positions
+            fetch('android/assets/textures.atlas')
+                .then(response => response.text())
+                .then(atlasContent => {
+                    parseAtlasInfo(atlasContent);
+                    loadDefaultTexture();
+                    createNewMap();
+                    setupEventListeners();
+                })
+                .catch(error => {
+                    console.error('Could not load atlas file:', error);
+                    // Use default values and continue
+                    loadDefaultTexture();
+                    createNewMap();
+                    setupEventListeners();
+                });
+        }
+        
+        function parseAtlasInfo(atlasContent) {
+            const lines = atlasContent.split('\n');
+            let foundTiles = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === '16x16_tiles') {
+                    foundTiles = true;
+                    continue;
+                }
+                
+                if (foundTiles && line.startsWith('xy:')) {
+                    const coords = line.replace('xy:', '').trim().split(',');
+                    tilesAtlasInfo.x = parseInt(coords[0].trim());
+                    tilesAtlasInfo.y = parseInt(coords[1].trim());
+                } else if (foundTiles && line.startsWith('size:')) {
+                    const size = line.replace('size:', '').trim().split(',');
+                    tilesAtlasInfo.width = parseInt(size[0].trim());
+                    tilesAtlasInfo.height = parseInt(size[1].trim());
+                    tilesAtlasInfo.tilesPerRow = Math.floor(tilesAtlasInfo.width / tilesAtlasInfo.tileSize);
+                    tilesAtlasInfo.tilesPerCol = Math.floor(tilesAtlasInfo.height / tilesAtlasInfo.tileSize);
+                    break; // We have all info we need
+                }
+            }
+            
+            console.log('Loaded atlas info:', tilesAtlasInfo);
+        }
         
         function loadDefaultTexture() {
             const img = new Image();

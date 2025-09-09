@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.loreJourney.effects.Moving;
 import com.loreJourney.entity.Player;
@@ -32,11 +33,17 @@ public class Hud extends UI {
 
     // directional pad: index i 0 - down, 1 - up, 2 - right, 3 - left
     private ImageButton[] dirPad;
+    // push button: index 0 - normal, 1 - pressed (when touching)
+    private ImageButton pushButton;
     // if dir pad is held down
     public boolean touchDown = false;
+    // if push button is held down
+    public boolean pushTouchDown = false;
     public int dirIndex = -1;
     // for changing the player's facing direction with a short tap like in pokemon
     private float dirTime = 0;
+    // for push button timing
+    private float pushTime = 0;
 
     // option buttons: inventoryUI and settings
     private ImageButton[] optionButtons;
@@ -62,6 +69,7 @@ public class Hud extends UI {
         super(gameScreen, tileMap, player, rm);
 
         createDirPad();
+        createPushButton();
         createOptionButtons();
         createLevelDescriptor();
         createDeathPrompt();
@@ -147,6 +155,16 @@ public class Hud extends UI {
             player.getAm().stopAnimation();
         }
 
+        if (pushTouchDown) {
+            pushTime += dt;
+            // Handle push button action here - you can add continuous action while held
+            // For example, if held for more than 0.5 seconds, do something special
+            if (pushTime > 0.5f) {
+                // Add continuous push action here if needed
+                // System.out.println("Push button held for " + pushTime + " seconds");
+            }
+        }
+
         if (ld) {
             levelMoving.update(dt);
             levelDescriptor.setPosition(levelMoving.position.x, levelMoving.position.y);
@@ -207,6 +225,7 @@ public class Hud extends UI {
             stage.addActor(gameScreen.getGame().fps);
         }
         for (int i = 0; i < 4; i++) dirPad[i].setVisible(toggle);
+        pushButton.setVisible(toggle);
         for (int i = 0; i < 2; i++) optionButtons[i].setVisible(toggle);
         levelDescriptor.setVisible(toggle);
     }
@@ -239,6 +258,28 @@ public class Hud extends UI {
         for (int i = 0; i < dirPad.length; i++) {
             stage.addActor(dirPad[i]);
         }
+    }
+
+    /**
+     * Creates the push button on the right side of the screen
+     * 40x80 pixel button (40x40 normal state on top, 40x40 pressed state below)
+     */
+    private void createPushButton() {
+        // Create push button style manually since it's only 1 column
+        ImageButton.ImageButtonStyle pushStyle = new ImageButton.ImageButtonStyle();
+        pushStyle.imageUp = new TextureRegionDrawable(rm.pushButton40x40[0][0]);   // top part (normal)
+        pushStyle.imageDown = new TextureRegionDrawable(rm.pushButton40x40[1][0]); // bottom part (pressed)
+        
+        pushButton = new ImageButton(pushStyle);
+        // Position at right side of screen: x = V_WIDTH - button_width - offset
+        // y = center vertically: (V_HEIGHT - button_height) / 2
+        pushButton.setPosition(LoreJourney.V_WIDTH - Util.PUSH_BUTTON_SIZE - Util.PUSH_BUTTON_OFFSET, 
+                               (LoreJourney.V_HEIGHT - Util.PUSH_BUTTON_SIZE) / 2);
+        pushButton.setSize(Util.PUSH_BUTTON_SIZE, Util.PUSH_BUTTON_SIZE);
+        
+        handlePushButtonEvents();
+        
+        stage.addActor(pushButton);
     }
 
     /**
@@ -425,6 +466,35 @@ public class Hud extends UI {
                 }
             });
         }
+    }
+
+    /**
+     * Handles push button events
+     */
+    private void handlePushButtonEvents() {
+        pushButton.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                pushTime = 0;
+                pushTouchDown = true;
+                // Add sound effect if needed
+                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                
+                // Add your custom push button functionality here
+                System.out.println("Push button pressed!");
+                
+                return true;
+            }
+            
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                pushTouchDown = false;
+                pushTime = 0;
+                
+                // Add your custom push button release functionality here
+                System.out.println("Push button released!");
+            }
+        });
     }
 
     private void movePlayer(int dir) {
